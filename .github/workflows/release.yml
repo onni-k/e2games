@@ -1,0 +1,34 @@
+# Builds the .ipk and publishes it as a GitHub release.
+# Runs when a version tag (v0.1.002, ...) is pushed, or manually from the Actions tab.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test and build
+        run: |
+          python3 tools/test_engine.py > /dev/null
+          sh tools/build.sh
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(sed -n 's/^VERSION = "\(.*\)"/\1/p' plugin/plugin.py)
+          TAG="v$VERSION"
+          IPK="dist/enigma2-plugin-extensions-e2games_${VERSION}_all.ipk"
+          NOTES="Install: copy the .ipk to /tmp on the receiver, run \`opkg install /tmp/$(basename "$IPK")\` and restart the GUI."
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" "$IPK" --clobber
+          else
+            gh release create "$TAG" "$IPK" --title "E2games $VERSION" --notes "$NOTES" --target "$GITHUB_SHA"
+          fi

@@ -25,6 +25,7 @@ OK / DOWN = hold and release to launch, EXIT = back to the menu.
 ## Releases
 
 The installable `.ipk` is attached to each GitHub release; it is not stored in the repository.
+Pushing a version tag (for example `v0.1.002`) builds the package and publishes the release automatically.
 
 ## License
 
