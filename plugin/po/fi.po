@@ -1,0 +1,70 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: E2games\n"
+"Language: fi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Pinball"
+msgstr "Flipperi"
+
+msgid "Select a game"
+msgstr "Valitse peli"
+
+msgid "OK: play    EXIT: close"
+msgstr "OK: pelaa    EXIT: sulje"
+
+msgid "Games for your receiver"
+msgstr "Pelejä vastaanottimeen"
+
+msgid "Score"
+msgstr "Pisteet"
+
+msgid "High score"
+msgstr "Ennätys"
+
+msgid "Balls"
+msgstr "Pallot"
+
+msgid "Multiplier"
+msgstr "Kerroin"
+
+msgid "Controls"
+msgstr "Ohjaus"
+
+msgid "LEFT / RED: left flipper"
+msgstr "VASEN / PUNAINEN: vasen maila"
+
+msgid "RIGHT / BLUE: right flipper"
+msgstr "OIKEA / SININEN: oikea maila"
+
+msgid "UP: both flippers"
+msgstr "YLÖS: molemmat mailat"
+
+msgid "OK / DOWN: hold and release to launch the ball"
+msgstr "OK / ALAS: pidä pohjassa ja vapauta, niin pallo lähtee"
+
+msgid "EXIT: back to menu"
+msgstr "EXIT: takaisin valikkoon"
+
+msgid "Light all three green targets for a bonus and a higher multiplier."
+msgstr "Sytytä kaikki kolme vihreää maalia, niin saat bonuksen ja suuremman kertoimen."
+
+msgid "GAME OVER"
+msgstr "PELI PÄÄTTYI"
+
+msgid "New high score!"
+msgstr "Uusi ennätys!"
+
+msgid "Press OK for a new game"
+msgstr "Uusi peli: paina OK"
+
+msgid "Ball saved!"
+msgstr "Pallo pelastettu!"
+
+msgid "Bonus!"
+msgstr "Bonus!"
+
+msgid "Hold OK and release to launch"
+msgstr "Pidä OK pohjassa ja vapauta, niin pallo lähtee"
