@@ -1,25 +1,32 @@
 # E2games
 
-Games for Enigma2 receivers (developed for OpenViX). Version 0.1.002 contains one game: **Pinball**.
+Games for Enigma2 receivers (developed for OpenViX). Games: **Pinball** and **Solitaire** (Klondike).
 
-- Native Enigma2 plugin (no pygame/SDL needed): `plugin.py` (menu), `pinball.py` (screen), `pinball_engine.py` (pure-Python physics).
+- Native Enigma2 plugin (no pygame/SDL needed): `plugin.py` (menu), one screen module per game (`pinball.py`, `solitaire.py`) and a pure-Python engine for each (`pinball_engine.py`, `solitaire_engine.py`).
 - Languages: English (source) and Finnish (`plugin/po/fi.po`), chosen automatically from the system language.
 - HD (1280x720) and FHD (1920x1080) skins are supported.
 
 ## Install
 
-    opkg install /tmp/enigma2-plugin-extensions-e2games_0.1.002_all.ipk
+    opkg install /tmp/enigma2-plugin-extensions-e2games_<version>_all.ipk
     # then restart the GUI
 
 ## Controls
 
-LEFT / RED = left flipper, RIGHT / BLUE = right flipper, UP = both flippers,
+Pinball: LEFT / RED = left flipper, RIGHT / BLUE = right flipper, UP = both flippers,
 OK / DOWN = hold and release to launch, EXIT = back to the menu.
+
+Solitaire: arrows move the cursor (UP inside a column selects more cards), OK picks up
+and places cards, OK twice on a card sends it to the foundation, OK on the stock turns a card.
+RED = undo, GREEN = card to the foundation, YELLOW = new game, BLUE = turn a card from the stock,
+EXIT = cancel selection / back to the menu.
 
 ## Build
 
-    python3 tools/make_assets.py   # regenerate graphics (needs Pillow)
-    python3 tools/test_engine.py   # physics self-test
+    python3 tools/make_assets.py   # regenerate pinball graphics (needs Pillow)
+    python3 tools/make_cards.py    # regenerate playing cards (needs Pillow)
+    python3 tools/test_engine.py   # pinball physics self-test
+    python3 tools/test_solitaire.py  # solitaire rules self-test
     sh tools/build.sh              # compiles .mo and builds dist/*.ipk
 
 ## Releases

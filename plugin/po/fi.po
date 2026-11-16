@@ -68,3 +68,51 @@ msgstr "Bonus!"
 
 msgid "Hold OK and release to launch"
 msgstr "Pidä OK pohjassa ja vapauta, niin pallo lähtee"
+
+msgid "Solitaire"
+msgstr "Pasianssi"
+
+msgid "Moves"
+msgstr "Siirrot"
+
+msgid "Time"
+msgstr "Aika"
+
+msgid "Arrows: move the cursor"
+msgstr "Nuolet: siirrä kohdistinta"
+
+msgid "OK: pick up cards / place them"
+msgstr "OK: poimi kortit / aseta ne"
+
+msgid "OK twice on a card: send it to the foundation"
+msgstr "OK kahdesti kortilla: siirrä se loppupinoon"
+
+msgid "OK on the stock: turn a new card"
+msgstr "OK pakalla: käännä uusi kortti"
+
+msgid "RED: undo"
+msgstr "PUNAINEN: peru siirto"
+
+msgid "GREEN: card to the foundation"
+msgstr "VIHREÄ: kortti loppupinoon"
+
+msgid "YELLOW: new game"
+msgstr "KELTAINEN: uusi peli"
+
+msgid "BLUE: turn a card from the stock"
+msgstr "SININEN: käännä kortti pakasta"
+
+msgid "EXIT: cancel selection / back to menu"
+msgstr "EXIT: peru valinta / takaisin valikkoon"
+
+msgid "Invalid move"
+msgstr "Siirto ei kelpaa"
+
+msgid "You won!"
+msgstr "Voitit!"
+
+msgid "Press YELLOW for a new game"
+msgstr "Uusi peli: paina KELTAISTA"
+
+msgid "Finishing..."
+msgstr "Viimeistellään..."

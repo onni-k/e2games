@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")/.."
 VERSION=$(sed -n 's/^VERSION = "\(.*\)"/\1/p' plugin/plugin.py)
 DEST=usr/lib/enigma2/python/Plugins/Extensions/E2games
-python3 tools/check_names.py plugin/plugin.py plugin/pinball.py
+python3 tools/check_names.py plugin/plugin.py plugin/pinball.py plugin/solitaire.py
 python3 tools/msgfmt.py plugin/po/fi.po plugin/locale/fi/LC_MESSAGES/E2games.mo
 rm -rf build && mkdir -p build/data/$DEST build/control dist
 cp -r plugin/*.py plugin/plugin.png plugin/images plugin/locale build/data/$DEST/
@@ -16,7 +16,7 @@ Priority: optional
 Architecture: all
 Maintainer: E2games
 Depends: enigma2
-Description: E2games - games for Enigma2 receivers (pinball)
+Description: E2games - games for Enigma2 receivers (pinball, solitaire)
 CTL
 printf '#!/bin/sh\nrm -rf /%s\nexit 0\n' "$DEST" > build/control/postrm
 chmod 755 build/control/postrm
