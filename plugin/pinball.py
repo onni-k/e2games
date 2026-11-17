@@ -24,7 +24,8 @@ FLIP_ORG = (9, 39)
 TABLE_X, TABLE_Y = 430, 10    # table position on a 1280x720 screen
 TICK_MS = 30
 KEY_TIMEOUT = 1.0             # release a key if no repeat arrives (lost "break")
-SCORE_FILE = "/etc/enigma2/e2games_pinball.score"
+SCORE_FILE = "/etc/enigma2/e2games_pinball%s.score"   # "" for table 1, "_t2", "_t3" ...
+TABLE_FILE = "/etc/enigma2/e2games_pinball.table"     # last played table
 
 # Linux input key codes
 KEYS_LEFT = (105, 398)        # LEFT, RED
@@ -33,31 +34,54 @@ KEYS_BOTH = (103,)            # UP
 KEYS_LAUNCH = (352, 108, 28)  # OK, DOWN, ENTER
 
 
-def loadHighscore():
+def scoreFile(table):
+	return SCORE_FILE % ("_t%d" % (table + 1) if table else "")
+
+
+def readNumber(path, default=0):
 	try:
-		with open(SCORE_FILE) as f:
+		with open(path) as f:
 			return int(f.read().strip())
 	except Exception:
-		return 0
+		return default
 
 
-def saveHighscore(value):
+def writeNumber(path, value):
 	try:
-		with open(SCORE_FILE, "w") as f:
+		with open(path, "w") as f:
 			f.write("%d\n" % value)
 	except Exception:
 		pass
 
 
+def lastTable():
+	table = readNumber(TABLE_FILE)
+	return table if 0 <= table < len(pe.TABLES) else 0
+
+
+def tableNames():
+	return [_("Classic"), _("Target Bank"), _("Star Lanes")]
+
+
+def tableHints():
+	return [
+		_("Light all three green targets for a bonus and a higher multiplier."),
+		_("Knock down all four orange targets or light both green targets for a bonus and a higher multiplier. The saucer holds the ball for extra points."),
+		_("Roll through all three top lanes for a bonus and a higher multiplier. The saucer holds the ball for extra points."),
+	]
+
+
 class E2Pinball(Screen):
-	def __init__(self, session):
+	def __init__(self, session, table=0):
+		self.tableIndex = table if 0 <= table < len(pe.TABLES) else 0
+		spec = pe.TABLES[self.tableIndex]
 		fhd = getDesktop(0).size().width() >= 1920
 		self.tableScale = s = 1.5 if fhd else 1.0
 		self.imgdir = resolveFilename(SCOPE_PLUGINS, "Extensions/E2games/images/%s/" % ("fhd" if fhd else "hd"))
 		v = self.px
 		img = self.imgdir
 		parts = ['<screen name="E2Pinball" position="0,0" size="%d,%d" title="E2games" flags="wfNoBorder" backgroundColor="#000000">' % (v(1280), v(720))]
-		parts.append('<ePixmap pixmap="%stable.png" position="%d,%d" size="%d,%d" zPosition="1" />' % (img, v(TABLE_X), v(TABLE_Y), v(pe.W), v(pe.H)))
+		parts.append('<ePixmap pixmap="%stable%d.png" position="%d,%d" size="%d,%d" zPosition="1" />' % (img, self.tableIndex + 1, v(TABLE_X), v(TABLE_Y), v(pe.W), v(pe.H)))
 
 		def pix(name, png, x, y, w, h, z):
 			src = ' pixmap="%s%s"' % (img, png) if png else ""
@@ -68,10 +92,26 @@ class E2Pinball(Screen):
 			parts.append('<widget name="%s" position="%d,%d" size="%d,%d" font="Regular;%d" halign="%s" valign="center" foregroundColor="%s" backgroundColor="#000000" transparent="1" zPosition="8" %s/>' % (
 				name, v(x), v(y), v(w), v(h), v(size), align, color, extra))
 
-		for i, (bx, by, br) in enumerate(pe.BUMPERS):
-			pix("bumper%d" % i, "bumper_lit.png", bx - br - 6, by - br - 6, 2 * br + 12, 2 * br + 12, 2)
-		for i, (y1, y2) in enumerate(pe.TARGETS):
-			pix("target%d" % i, "target_lit.png", pe.TARGET_X - 7, y1 - 4, 14, y2 - y1 + 8, 2)
+		self.lightNames = []
+		for i, (bx, by, br) in enumerate(spec["bumpers"]):
+			pix("bumper%d" % i, "bumper_lit_%d.png" % int(br), bx - br - 6, by - br - 6, 2 * br + 12, 2 * br + 12, 2)
+			self.lightNames.append("bumper%d" % i)
+		for i, seg in enumerate(spec["standups"]):
+			x, y, w, h = pe.segment_box(seg, 7)
+			pix("standup%d" % i, "t%d_standup%d.png" % (self.tableIndex + 1, i), x, y, w, h, 2)
+			self.lightNames.append("standup%d" % i)
+		for i, seg in enumerate(spec["drops"]):
+			x, y, w, h = pe.segment_box(seg, 6)
+			pix("drop%d" % i, "t%d_drop%d.png" % (self.tableIndex + 1, i), x, y, w, h, 2)
+			self.lightNames.append("drop%d" % i)
+		for i, lane in enumerate(spec["lanes"]):
+			x, y = pe.lane_light(lane)
+			pix("lane%d" % i, "lane_lit.png", x - 10, y - 10, 20, 20, 2)
+			self.lightNames.append("lane%d" % i)
+		for i, (sx, sy, sr, ex, ey) in enumerate(spec["saucers"]):
+			pix("saucer%d" % i, "saucer_lit_%d.png" % int(sr), sx - sr - 8, sy - sr - 8, 2 * sr + 16, 2 * sr + 16, 2)
+			self.lightNames.append("saucer%d" % i)
+		self.lightNames += ["sling0", "sling1"]
 		for i, (side, tri) in enumerate((("L", pe.SLING_L), ("R", pe.SLING_R))):
 			x0 = min(p[0] for p in tri) - 4
 			y0 = min(p[1] for p in tri) - 4
@@ -83,6 +123,7 @@ class E2Pinball(Screen):
 
 		label("title", 40, 30, 360, 50, 38, "#ffffff")
 		label("game", 40, 80, 360, 36, 26, "#96d7ff")
+		label("table", 40, 116, 360, 32, 21, "#c8cce0")
 		label("scoreCaption", 40, 170, 360, 30, 22, "#8088b0")
 		label("score", 40, 200, 360, 56, 46, "#ffd23c")
 		label("highCaption", 40, 290, 360, 30, 22, "#8088b0")
@@ -93,7 +134,7 @@ class E2Pinball(Screen):
 		label("mult", 220, 430, 180, 44, 34, "#5aff82")
 		label("helpCaption", 890, 30, 350, 36, 26, "#96d7ff")
 		parts.append('<widget name="help" position="%d,%d" size="%d,%d" font="Regular;%d" halign="left" valign="top" foregroundColor="#c8cce0" backgroundColor="#000000" transparent="1" zPosition="8" />' % (
-			v(890), v(80), v(350), v(420), v(20)))
+			v(890), v(80), v(360), v(620), v(20)))
 		label("message", TABLE_X + 20, TABLE_Y + 335, 340, 100, 26, "#ffffff", "center", 'borderWidth="2" borderColor="#000000" ')
 		parts.append("</screen>")
 		self.skin = "\n".join(parts)
@@ -101,10 +142,11 @@ class E2Pinball(Screen):
 		Screen.__init__(self, session)
 		self.setTitle("E2games - " + _("Pinball"))
 
-		for name in ("bumper0", "bumper1", "bumper2", "target0", "target1", "target2", "sling0", "sling1", "plunger", "flipL", "flipR", "ball"):
+		for name in self.lightNames + ["plunger", "flipL", "flipR", "ball"]:
 			self[name] = Pixmap()
 		self["title"] = Label("E2games")
 		self["game"] = Label(_("Pinball"))
+		self["table"] = Label("%s %d/%d: %s" % (_("Table"), self.tableIndex + 1, len(pe.TABLES), tableNames()[self.tableIndex]))
 		self["scoreCaption"] = Label(_("Score"))
 		self["score"] = Label("0")
 		self["highCaption"] = Label(_("High score"))
@@ -114,20 +156,24 @@ class E2Pinball(Screen):
 		self["multCaption"] = Label(_("Multiplier"))
 		self["mult"] = Label("")
 		self["helpCaption"] = Label(_("Controls"))
-		self["help"] = Label("\n\n".join((
+		self["help"] = Label("\n".join((
 			_("LEFT / RED: left flipper"),
 			_("RIGHT / BLUE: right flipper"),
 			_("UP: both flippers"),
 			_("OK / DOWN: hold and release to launch the ball"),
+			_("YELLOW: change table (between games)"),
 			_("EXIT: back to menu"),
-			_("Light all three green targets for a bonus and a higher multiplier."))))
+			"",
+			tableHints()[self.tableIndex])))
 		self["message"] = Label("")
 
-		self["actions"] = ActionMap(["OkCancelActions"], {
+		self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
 			"cancel": self.keyExit,
+			"yellow": self.keyNextTable,
 		}, -1)
 
-		self.game = pe.Pinball(loadHighscore())
+		writeNumber(TABLE_FILE, self.tableIndex)
+		self.game = pe.Pinball(readNumber(scoreFile(self.tableIndex)), self.tableIndex)
 		self.savedHigh = self.game.highscore
 		self.keysHeld = {}             # key group -> time of the last key event
 		self.drawn = {}            # cache of what is currently drawn
@@ -147,7 +193,7 @@ class E2Pinball(Screen):
 		self.flipFrames = (
 			[LoadPixmap(self.imgdir + "flipL%d.png" % i) for i in range(FRAMES)],
 			[LoadPixmap(self.imgdir + "flipR%d.png" % i) for i in range(FRAMES)])
-		for name in ("bumper0", "bumper1", "bumper2", "target0", "target1", "target2", "sling0", "sling1"):
+		for name in self.lightNames:
 			self[name].hide()
 		self.draw()
 		eActionMap.getInstance().bindAction("", -0x7FFFFFFF, self.rawKey)
@@ -165,10 +211,15 @@ class E2Pinball(Screen):
 	def storeHighscore(self):
 		if self.game.highscore > self.savedHigh:
 			self.savedHigh = self.game.highscore
-			saveHighscore(self.savedHigh)
+			writeNumber(scoreFile(self.tableIndex), self.savedHigh)
 
 	def keyExit(self):
 		self.close()
+
+	def keyNextTable(self):
+		# only between games; the opener reopens the screen with the new table
+		if self.game.state == self.game.OVER:
+			self.close((self.tableIndex + 1) % len(pe.TABLES))
 
 	# ---- keys -----------------------------------------------------------
 	def rawKey(self, key, flag):
@@ -273,9 +324,16 @@ class E2Pinball(Screen):
 			frame = game.flippers[i].frame(FRAMES)
 			if self.changed(name, frame):
 				self[name].instance.setPixmap(self.flipFrames[i][frame])
-		for i in (0, 1, 2):
-			self.setLight("bumper%d" % i, game.bumper_lit[i] > 0.0)
-			self.setLight("target%d" % i, game.target_lit[i])
+		for i, lit in enumerate(game.bumper_lit):
+			self.setLight("bumper%d" % i, lit > 0.0)
+		for i, lit in enumerate(game.standup_lit):
+			self.setLight("standup%d" % i, lit)
+		for i, down in enumerate(game.drop_down):
+			self.setLight("drop%d" % i, not down)
+		for i, lit in enumerate(game.lane_lit):
+			self.setLight("lane%d" % i, lit)
+		for i, lit in enumerate(game.saucer_lit):
+			self.setLight("saucer%d" % i, lit > 0.0)
 		for i in (0, 1):
 			self.setLight("sling%d" % i, game.sling_lit[i] > 0.0)
 		if self.changed("score", game.score):
@@ -290,9 +348,9 @@ class E2Pinball(Screen):
 			if game.new_highscore:
 				msg = _("GAME OVER") + "\n" + _("New high score!") + "\n" + _("Press OK for a new game")
 			elif game.balls == 0 and game.score == 0 and not self.drawn.get("played"):
-				msg = _("Press OK for a new game")
+				msg = _("Press OK for a new game") + "\n" + _("YELLOW: change table")
 			else:
-				msg = _("GAME OVER") + "\n" + _("Press OK for a new game")
+				msg = _("GAME OVER") + "\n" + _("Press OK for a new game") + "\n" + _("YELLOW: change table")
 		else:
 			self.drawn["played"] = True
 			if game.note == "saved":

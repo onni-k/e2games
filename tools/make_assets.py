@@ -43,40 +43,54 @@ def circle(d, x, y, r, k, **kw):
 	d.ellipse(((x - r) * k, (y - r) * k, (x + r) * k, (y + r) * k), **kw)
 
 
-def table(s, outdir):
+def bumper(d, x, y, r, k, lit=False):
+	if lit:
+		circle(d, x, y, r, k, fill=(255, 210, 60, 255), outline=(255, 255, 255, 255), width=int(2 * k))
+		circle(d, x, y, r * 0.62, k, fill=(255, 245, 150, 255))
+		circle(d, x, y, r * 0.28, k, fill=(255, 255, 255, 255))
+	else:
+		circle(d, x, y, r, k, fill=(150, 20, 40, 255), outline=(255, 255, 255, 255), width=int(2 * k))
+		circle(d, x, y, r * 0.62, k, fill=(210, 60, 70, 255))
+		circle(d, x, y, r * 0.28, k, fill=(255, 230, 230, 255))
+
+
+def target(d, seg, k, fill, outline, pad=3.0):
+	x, y, w, h = pe.segment_box(seg, pad)
+	d.rounded_rectangle((x * k, y * k, (x + w) * k, (y + h) * k), radius=2 * k, fill=fill, outline=outline, width=int(k))
+
+
+def table(n, s, outdir):
+	spec = pe.TABLES[n]
 	k = SS * s
 	img = new(pe.W, pe.H, k, (0, 0, 0, 255))
 	# playfield shape
-	outline = pe.wall_polylines()[0]
+	outline = pe.wall_polylines(n)[0]
 	mask = Image.new("L", img.size, 0)
 	ImageDraw.Draw(mask).polygon([(x * k, y * k) for x, y in outline], fill=255)
 	grad = Image.new("RGBA", img.size)
 	gd = ImageDraw.Draw(grad)
+	(r1, g1, b1), (r2, g2, b2) = spec["colors"]
 	for y in range(img.size[1]):
 		t = y / float(img.size[1])
-		gd.line((0, y, img.size[0], y), fill=(int(14 + 40 * t), int(18 + 6 * t), int(64 + 30 * t), 255))
+		gd.line((0, y, img.size[0], y), fill=(int(r1 + (r2 - r1) * t), int(g1 + (g2 - g1) * t), int(b1 + (b2 - b1) * t), 255))
 	img.paste(grad, (0, 0), mask)
 	d = ImageDraw.Draw(img)
 	# decoration: star dots and guide arrows
 	import random
-	rnd = random.Random(7)
+	rnd = random.Random(7 + n)
 	for _ in range(90):
 		x, y = rnd.uniform(20, 360), rnd.uniform(40, 680)
 		if math.hypot(x - pe.ARC_CX, y - pe.ARC_CY) > pe.ARC_R - 12 and y < pe.ARC_CY:
 			continue
 		r = rnd.uniform(0.5, 1.3)
-		c = rnd.randint(90, 190)
+		c = rnd.randint(110, 200)
 		circle(d, x, y, r, k, fill=(c, c, 255, 255))
 	for i in range(5):
 		y = 600 - i * 85
-		d.polygon([(390 * k, (y - 12) * k), (382 * k, y * k), (398 * k, y * k)], fill=(70, 90, 150, 255))
-	try:
-		f = ImageFont.truetype(FONT, int(54 * k))
-		d.text((190 * k, 455 * k), "E2", font=f, fill=(46, 44, 120, 255), anchor="mm")
-		f2 = ImageFont.truetype(FONT, int(17 * k))
-		d.text((190 * k, 498 * k), "PINBALL", font=f2, fill=(60, 56, 140, 255), anchor="mm")
-	except Exception:
-		pass
+		d.polygon([(390 * k, (y - 12) * k), (382 * k, y * k), (398 * k, y * k)], fill=(90, 110, 170, 255))
+	text = tuple(min(255, c + 34) for c in spec["colors"][1]) + (255,)
+	d.text((190 * k, 455 * k), "E2", font=ImageFont.truetype(FONT, int(54 * k)), fill=text, anchor="mm")
+	d.text((190 * k, 498 * k), spec["name"].upper(), font=ImageFont.truetype(FONT, int(16 * k)), fill=text, anchor="mm")
 	# drain marker
 	d.rectangle((120 * k, 690 * k, 260 * k, 700 * k), fill=(90, 10, 20, 255))
 	# gate (one way)
@@ -86,24 +100,41 @@ def table(s, outdir):
 	for tri in (pe.SLING_L, pe.SLING_R):
 		d.polygon([(x * k, y * k) for x, y in tri], fill=(120, 50, 10, 255))
 		line(d, [tri[2], tri[0]], k, 5, (255, 150, 40, 255))
-	d.polygon([(x * k, y * k) for x, y in pe.LEFT_BUMP], fill=(40, 70, 120, 255))
+	# closed wall shapes are filled
+	for poly in spec["walls"]:
+		if len(poly) > 2:
+			d.polygon([(x * k, y * k) for x, y in poly], fill=WALL_DARK + (255,))
+	# rollover lanes: arrows and unlit lights
+	for lane in spec["lanes"]:
+		x1, y1, x2, y2 = lane
+		cx = (x1 + x2) / 2.0
+		d.polygon([((cx - 7) * k, (y1 + 10) * k), ((cx + 7) * k, (y1 + 10) * k), (cx * k, (y1 + 22) * k)], fill=(150, 120, 200, 255))
+		lx, ly = pe.lane_light(lane)
+		circle(d, lx, ly, 7, k, fill=(60, 40, 80, 255), outline=(170, 150, 210, 255), width=int(k))
+	# saucers (dark holes)
+	for x, y, r, ex, ey in spec["saucers"]:
+		circle(d, x, y, r + 4, k, fill=(200, 170, 60, 255))
+		circle(d, x, y, r, k, fill=(10, 8, 14, 255))
+	# drop target slots (the targets themselves are separate images)
+	for seg in spec["drops"]:
+		target(d, seg, k, (8, 20, 18, 255), (60, 90, 80, 255), 4.0)
 	# walls
-	for poly in pe.wall_polylines():
+	for poly in pe.wall_polylines(n):
 		line(d, poly, k, 6, WALL_DARK + (255,))
-	for poly in pe.wall_polylines():
+	for poly in pe.wall_polylines(n):
 		line(d, poly, k, 3, WALL + (255,))
-	# targets (unlit)
-	for y1, y2 in pe.TARGETS:
-		d.rounded_rectangle((11 * k, y1 * k, 17 * k, y2 * k), radius=2 * k, fill=(20, 90, 40, 255), outline=(60, 160, 80, 255), width=int(k))
-	# bumpers (unlit)
-	for x, y, r in pe.BUMPERS:
-		circle(d, x, y, r, k, fill=(150, 20, 40, 255), outline=(255, 255, 255, 255), width=int(2 * k))
-		circle(d, x, y, r * 0.62, k, fill=(210, 60, 70, 255))
-		circle(d, x, y, r * 0.28, k, fill=(255, 230, 230, 255))
+	# stand-up targets (unlit)
+	for seg in spec["standups"]:
+		target(d, seg, k, (20, 90, 40, 255), (60, 160, 80, 255))
+	# posts
+	for x, y, r in spec["posts"]:
+		circle(d, x, y, r, k, fill=(230, 230, 240, 255), outline=(90, 100, 140, 255), width=int(1.5 * k))
+	for x, y, r in spec["bumpers"]:
+		bumper(d, x, y, r, k)
 	# flipper pivots base
 	for x, y in pe.FLIP_PIVOTS:
 		circle(d, x, y, 9, k, fill=WALL_DARK + (255,))
-	done(img.convert("RGB"), k, s, "table.png", outdir)
+	done(img.convert("RGB"), k, s, "table%d.png" % (n + 1), outdir)
 
 
 def capsule(d, k, ox, oy, a, sign, r1, r2, col):
@@ -148,27 +179,52 @@ def ball(s, outdir):
 
 def lights(s, outdir):
 	k = SS * s
-	r = pe.BUMPERS[0][2]
-	size = 2 * r + 12
-	img = new(size, size, k)
-	d = ImageDraw.Draw(img)
-	c = size / 2.0
-	circle(d, c, c, r + 4, k, fill=(255, 240, 120, 110))
-	img = img.filter(ImageFilter.GaussianBlur(2 * k))
-	d = ImageDraw.Draw(img)
-	circle(d, c, c, r, k, fill=(255, 210, 60, 255), outline=(255, 255, 255, 255), width=int(2 * k))
-	circle(d, c, c, r * 0.62, k, fill=(255, 245, 150, 255))
-	circle(d, c, c, r * 0.28, k, fill=(255, 255, 255, 255))
-	done(img, k, s, "bumper_lit.png", outdir)
+	radii = sorted(set([int(r) for t in pe.TABLES for x, y, r in t["bumpers"]]))
+	for r in radii:
+		size = 2 * r + 12
+		img = new(size, size, k)
+		d = ImageDraw.Draw(img)
+		c = size / 2.0
+		circle(d, c, c, r + 4, k, fill=(255, 240, 120, 110))
+		img = img.filter(ImageFilter.GaussianBlur(2 * k))
+		bumper(ImageDraw.Draw(img), c, c, r, k, lit=True)
+		done(img, k, s, "bumper_lit_%d.png" % r, outdir)
 
-	y1, y2 = pe.TARGETS[0]
-	img = new(14, y2 - y1 + 8, k)
+	for n, spec in enumerate(pe.TABLES):
+		for i, seg in enumerate(spec["standups"]):
+			x, y, w, h = pe.segment_box(seg, 7)
+			img = new(w, h, k)
+			d = ImageDraw.Draw(img)
+			local = ((seg[0][0] - x, seg[0][1] - y), (seg[1][0] - x, seg[1][1] - y))
+			target(d, local, k, (80, 255, 120, 90), None, 5)
+			img = img.filter(ImageFilter.GaussianBlur(1.5 * k))
+			target(ImageDraw.Draw(img), local, k, (90, 255, 130, 255), (230, 255, 235, 255))
+			done(img, k, s, "t%d_standup%d.png" % (n + 1, i), outdir)
+		for i, seg in enumerate(spec["drops"]):
+			x, y, w, h = pe.segment_box(seg, 6)
+			img = new(w, h, k)
+			local = ((seg[0][0] - x, seg[0][1] - y), (seg[1][0] - x, seg[1][1] - y))
+			target(ImageDraw.Draw(img), local, k, (255, 140, 40, 255), (255, 230, 190, 255), 5)
+			done(img, k, s, "t%d_drop%d.png" % (n + 1, i), outdir)
+
+	img = new(20, 20, k)
 	d = ImageDraw.Draw(img)
-	d.rounded_rectangle((2 * k, 2 * k, 12 * k, (y2 - y1 + 6) * k), radius=4 * k, fill=(80, 255, 120, 90))
+	circle(d, 10, 10, 9, k, fill=(255, 220, 120, 110))
 	img = img.filter(ImageFilter.GaussianBlur(1.5 * k))
-	d = ImageDraw.Draw(img)
-	d.rounded_rectangle((4 * k, 4 * k, 10 * k, (y2 - y1 + 4) * k), radius=2 * k, fill=(90, 255, 130, 255), outline=(230, 255, 235, 255), width=int(k))
-	done(img, k, s, "target_lit.png", outdir)
+	circle(ImageDraw.Draw(img), 10, 10, 7, k, fill=(255, 235, 110, 255), outline=(255, 255, 230, 255), width=int(k))
+	done(img, k, s, "lane_lit.png", outdir)
+
+	for r in sorted(set(int(x[2]) for t in pe.TABLES for x in t["saucers"])):
+		size = 2 * r + 16
+		img = new(size, size, k)
+		d = ImageDraw.Draw(img)
+		c = size / 2.0
+		circle(d, c, c, r + 7, k, fill=(255, 230, 90, 120))
+		img = img.filter(ImageFilter.GaussianBlur(2 * k))
+		d = ImageDraw.Draw(img)
+		circle(d, c, c, r + 4, k, fill=(255, 235, 120, 255))
+		circle(d, c, c, r, k, fill=(10, 8, 14, 255))
+		done(img, k, s, "saucer_lit_%d.png" % r, outdir)
 
 	for side, tri in (("L", pe.SLING_L), ("R", pe.SLING_R)):
 		x0 = min(p[0] for p in tri) - 4
@@ -205,7 +261,11 @@ def main():
 	for name, s in (("hd", 1.0), ("fhd", 1.5)):
 		outdir = os.path.join(PLUGIN, "images", name)
 		os.makedirs(outdir, exist_ok=True)
-		table(s, outdir)
+		for old in ("table.png", "bumper_lit.png", "target_lit.png"):
+			if os.path.exists(os.path.join(outdir, old)):
+				os.remove(os.path.join(outdir, old))
+		for n in range(len(pe.TABLES)):
+			table(n, s, outdir)
 		flippers(s, outdir)
 		ball(s, outdir)
 		lights(s, outdir)

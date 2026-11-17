@@ -116,3 +116,57 @@ msgstr "Uusi peli: paina KELTAISTA"
 
 msgid "Finishing..."
 msgstr "Viimeistellään..."
+
+msgid "Table"
+msgstr "Pöytä"
+
+msgid "Classic"
+msgstr "Klassikko"
+
+msgid "Target Bank"
+msgstr "Maalirivi"
+
+msgid "Star Lanes"
+msgstr "Tähtikaistat"
+
+msgid "YELLOW: change table"
+msgstr "KELTAINEN: vaihda pöytää"
+
+msgid "YELLOW: change table (between games)"
+msgstr "KELTAINEN: vaihda pöytää (pelien välissä)"
+
+msgid "Knock down all four orange targets or light both green targets for a bonus and a higher multiplier. The saucer holds the ball for extra points."
+msgstr "Kaada kaikki neljä oranssia maalia tai sytytä molemmat vihreät maalit, niin saat bonuksen ja suuremman kertoimen. Kuoppa pitää palloa hetken ja antaa lisäpisteitä."
+
+msgid "Roll through all three top lanes for a bonus and a higher multiplier. The saucer holds the ball for extra points."
+msgstr "Vieritä pallo kaikkien kolmen yläkaistan läpi, niin saat bonuksen ja suuremman kertoimen. Kuoppa pitää palloa hetken ja antaa lisäpisteitä."
+
+msgid "Bubble Shooter"
+msgstr "Kuplapeli"
+
+msgid "Level"
+msgstr "Taso"
+
+msgid "Level complete!"
+msgstr "Taso läpäisty!"
+
+msgid "New row in"
+msgstr "Uusi rivi"
+
+msgid "Next"
+msgstr "Seuraava"
+
+msgid "LEFT / RIGHT: aim (hold to turn)"
+msgstr "VASEN / OIKEA: tähtää (pidä pohjassa)"
+
+msgid "OK / UP: shoot"
+msgstr "OK / YLÖS: ammu"
+
+msgid "DOWN / BLUE: swap with the next bubble"
+msgstr "ALAS / SININEN: vaihda seuraavaan kuplaan"
+
+msgid "Join three or more bubbles of the same colour to pop them. Bubbles left hanging fall down for extra points."
+msgstr "Yhdistä kolme tai useampi samanvärinen kupla, niin ne puhkeavat. Irti jäävät kuplat putoavat ja antavat lisäpisteitä."
+
+msgid "Each shot that pops nothing brings a new row closer. Do not let the bubbles cross the red line."
+msgstr "Jokainen ohilaukaus tuo uuden rivin lähemmäs. Älä päästä kuplia punaisen viivan yli."

@@ -10,20 +10,32 @@ from Screens.Screen import Screen
 
 from . import _
 
-VERSION = "0.2.000"
+VERSION = "0.3.000"
 
 
 def getScale():
 	return 1.5 if getDesktop(0).size().width() >= 1920 else 1.0
 
 
+def openPinball(session, table=None):
+	from .pinball import E2Pinball, lastTable
+
+	def closed(result=None):
+		# the pinball screen returns a table number when the player changes table
+		if isinstance(result, int):
+			openPinball(session, result)
+
+	session.openWithCallback(closed, E2Pinball, lastTable() if table is None else table)
+
+
 def gameList():
 	# (title, function that opens the game) - add new games here
-	from .pinball import E2Pinball
+	from .bubble import E2Bubble
 	from .solitaire import E2Solitaire
 	return [
-		(_("Pinball"), lambda session: session.open(E2Pinball)),
+		(_("Pinball"), openPinball),
 		(_("Solitaire"), lambda session: session.open(E2Solitaire)),
+		(_("Bubble Shooter"), lambda session: session.open(E2Bubble)),
 	]
 
 

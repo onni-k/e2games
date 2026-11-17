@@ -2,6 +2,9 @@
 # E2games - pinball physics engine.
 # Pure Python, no Enigma2 imports, so it can be tested on any machine.
 # All coordinates are in "table units" (table is W x H, y grows downwards).
+#
+# The outer cabinet (walls, launch lane, flippers, slingshots) is the same on
+# every table; each entry in TABLES adds its own targets on the playfield.
 
 import math
 import random
@@ -27,26 +30,71 @@ FLIP_SPEED_UP = 15.0
 FLIP_SPEED_DOWN = 11.0
 FLIP_PIVOTS = ((118.0, 610.0), (262.0, 610.0))   # left, right
 
-BUMPERS = ((120.0, 215.0, 22.0), (260.0, 215.0, 22.0), (190.0, 300.0, 22.0))
-TARGET_X = 14.0
-TARGETS = ((320.0, 350.0), (358.0, 388.0), (396.0, 426.0))   # y ranges on the left wall
-
 SLING_L = ((55.0, 440.0), (55.0, 525.0), (100.0, 550.0))
 SLING_R = ((325.0, 440.0), (325.0, 525.0), (280.0, 550.0))
-LEFT_BUMP = ((10.0, 235.0), (42.0, 270.0), (10.0, 295.0))
 GUIDE_L = ((10.0, 540.0), (118.0, 604.0))
 GUIDE_R = ((370.0, 540.0), (262.0, 604.0))
 GATE = ((370.0, 90.0), (370.0, 210.0))
 
 SCORE_BUMPER = 100
 SCORE_SLING = 10
-SCORE_TARGET = 500
-SCORE_ALL_TARGETS = 5000
+SCORE_STANDUP = 500
+SCORE_DROP = 300
+SCORE_LANE = 200
+SCORE_SAUCER = 1000
+SCORE_BANK = 5000            # every target of a group done
 MAX_MULT = 5
 BALLS_PER_GAME = 3
 BALL_SAVE_TIME = 8.0
+SAUCER_HOLD = 1.0
 
-K_WALL, K_SLING, K_TARGET, K_GATE = 0, 1, 2, 3
+K_WALL, K_SLING, K_STANDUP, K_DROP, K_GATE = 0, 1, 2, 3, 4
+
+# ---- tables ---------------------------------------------------------------
+# bumpers:  (x, y, radius)             active, kick the ball away
+# posts:    (x, y, radius)             passive rubber posts
+# standups: ((x1, y1), (x2, y2))       light up when hit
+# drops:    ((x1, y1), (x2, y2))       fall down when hit, come back as a bank
+# lanes:    (x1, y1, x2, y2)           rollover sensors (ball passes through)
+# saucers:  (x, y, radius, vx, vy)     catch the ball and kick it out again
+# walls:    polylines
+TABLES = [
+	{
+		"name": "Classic",
+		"colors": ((14, 18, 64), (54, 24, 94)),
+		"bumpers": ((120.0, 215.0, 22.0), (260.0, 215.0, 22.0), (190.0, 300.0, 22.0)),
+		"posts": (),
+		"standups": (((14.0, 320.0), (14.0, 350.0)), ((14.0, 358.0), (14.0, 388.0)), ((14.0, 396.0), (14.0, 426.0))),
+		"drops": (),
+		"lanes": (),
+		"saucers": (),
+		"walls": (((10.0, 235.0), (42.0, 270.0), (10.0, 295.0)),),
+	},
+	{
+		"name": "Target Bank",
+		"colors": ((10, 46, 40), (16, 84, 60)),
+		"bumpers": ((105.0, 175.0, 20.0), (275.0, 175.0, 20.0)),
+		"posts": ((190.0, 165.0, 7.0),),
+		"standups": (((366.0, 330.0), (366.0, 362.0)), ((366.0, 372.0), (366.0, 404.0))),
+		"drops": (((122.0, 300.0), (148.0, 300.0)), ((154.0, 300.0), (180.0, 300.0)),
+			((200.0, 300.0), (226.0, 300.0)), ((232.0, 300.0), (258.0, 300.0))),
+		"lanes": (),
+		"saucers": ((60.0, 380.0, 13.0, 260.0, -560.0),),
+		"walls": (((10.0, 330.0), (34.0, 352.0)), ((10.0, 430.0), (34.0, 408.0))),
+	},
+	{
+		"name": "Star Lanes",
+		"colors": ((40, 12, 50), (90, 22, 50)),
+		"bumpers": ((140.0, 180.0, 19.0), (240.0, 180.0, 19.0), (190.0, 245.0, 19.0), (100.0, 265.0, 17.0), (280.0, 265.0, 17.0)),
+		"posts": ((110.0, 360.0, 6.0), (270.0, 360.0, 6.0), (190.0, 405.0, 6.0)),
+		"standups": (),
+		"drops": (),
+		"lanes": ((132.0, 68.0, 168.0, 104.0), (172.0, 68.0, 208.0, 104.0), (212.0, 68.0, 248.0, 104.0)),
+		"saucers": ((190.0, 335.0, 12.0, 0.0, -520.0),),
+		"walls": (((128.0, 62.0), (128.0, 110.0)), ((170.0, 62.0), (170.0, 110.0)),
+			((210.0, 62.0), (210.0, 110.0)), ((252.0, 62.0), (252.0, 110.0))),
+	},
+]
 
 
 def arc_points(n=28):
@@ -57,18 +105,35 @@ def arc_points(n=28):
 	return pts
 
 
-def wall_polylines():
-	"""Static walls as polylines (also used by the graphics generator)."""
+def cabinet_polylines():
+	"""Walls shared by every table."""
 	return [
 		[(PLAY_L, H), (PLAY_L, ARC_CY)] + arc_points()[1:] + [(LANE_R, H)],
 		[(PLAY_R, H), (PLAY_R, ARC_CY)],
 		[(PLAY_R, PLUNGER_Y), (LANE_R, PLUNGER_Y)],
 		list(GUIDE_L),
 		list(GUIDE_R),
-		list(LEFT_BUMP),
 		[SLING_L[0], SLING_L[1], SLING_L[2]],
 		[SLING_R[0], SLING_R[1], SLING_R[2]],
 	]
+
+
+def wall_polylines(table=0):
+	"""All static walls of a table (also used by the graphics generator)."""
+	return cabinet_polylines() + [list(w) for w in TABLES[table]["walls"]]
+
+
+def segment_box(seg, pad):
+	"""Bounding box (x, y, w, h) around a segment, used for the light images."""
+	(x1, y1), (x2, y2) = seg
+	x, y = min(x1, x2) - pad, min(y1, y2) - pad
+	return (x, y, abs(x2 - x1) + 2 * pad, abs(y2 - y1) + 2 * pad)
+
+
+def lane_light(lane):
+	"""Centre of the light below a rollover lane."""
+	x1, y1, x2, y2 = lane
+	return ((x1 + x2) / 2.0, y2 + 16.0)
 
 
 def _seg(p1, p2, rest, kind, idx=0):
@@ -105,22 +170,29 @@ class Flipper(object):
 class Pinball(object):
 	READY, PLAY, OVER = 0, 1, 2
 
-	def __init__(self, highscore=0):
+	def __init__(self, highscore=0, table=0):
+		self.table = table
+		t = TABLES[table]
+		self.bumpers = t["bumpers"]
+		self.posts = t["posts"]
+		self.lanes = t["lanes"]
+		self.saucers = t["saucers"]
 		self.segs = []
-		for poly in wall_polylines():
+		for poly in wall_polylines(table):
 			for a, b in zip(poly[:-1], poly[1:]):
 				self.segs.append(_seg(a, b, 0.45, K_WALL))
 		self.segs.append(_seg(SLING_L[2], SLING_L[0], 0.3, K_SLING, 0))
 		self.segs.append(_seg(SLING_R[2], SLING_R[0], 0.3, K_SLING, 1))
-		for i, (y1, y2) in enumerate(TARGETS):
-			self.segs.append(_seg((TARGET_X, y1), (TARGET_X, y2), 0.5, K_TARGET, i))
+		for i, (a, b) in enumerate(t["standups"]):
+			self.segs.append(_seg(a, b, 0.5, K_STANDUP, i))
+		self.dropSegs = [_seg(a, b, 0.4, K_DROP, i) for i, (a, b) in enumerate(t["drops"])]
 		self.gate = _seg(GATE[0], GATE[1], 0.45, K_GATE)
 		self.flippers = (Flipper(FLIP_PIVOTS[0], 1), Flipper(FLIP_PIVOTS[1], -1))
 		self.highscore = highscore
 		self.new_highscore = False
-		self.bumper_lit = [0.0, 0.0, 0.0]
+		self.bumper_lit = [0.0] * len(self.bumpers)
 		self.sling_lit = [0.0, 0.0]
-		self.target_lit = [False, False, False]
+		self.saucer_lit = [0.0] * len(self.saucers)
 		self.acc = 0.0
 		self.save_used = False
 		self.state = self.OVER
@@ -129,6 +201,7 @@ class Pinball(object):
 		self.mult = 1
 		self.note = ""            # short event note: "saved", "bonus" or ""
 		self.note_time = 0.0
+		self._reset_targets()
 		self._reset_ball()
 
 	# ---- game control -------------------------------------------------
@@ -137,11 +210,18 @@ class Pinball(object):
 		self.balls = BALLS_PER_GAME
 		self.mult = 1
 		self.new_highscore = False
-		self.target_lit = [False, False, False]
 		self.note = ""
 		self.save_used = False
+		self._reset_targets()
 		self._reset_ball()
 		self.state = self.READY
+
+	def _reset_targets(self):
+		t = TABLES[self.table]
+		self.standup_lit = [False] * len(t["standups"])
+		self.drop_down = [False] * len(t["drops"])
+		self.lane_lit = [False] * len(self.lanes)
+		self.lane_inside = [False] * len(self.lanes)
 
 	def _reset_ball(self):
 		self.bx, self.by = BALL_START
@@ -152,6 +232,9 @@ class Pinball(object):
 		self.gate_closed = False
 		self.play_time = 0.0
 		self.still_time = 0.0
+		self.held = -1            # index of the saucer holding the ball
+		self.hold_time = 0.0
+		self.saucer_cool = 0.0
 
 	def set_flipper(self, index, pressed):
 		self.flippers[index].pressed = pressed
@@ -181,14 +264,18 @@ class Pinball(object):
 		self.note = note
 		self.note_time = 2.0
 
+	def _bank_done(self):
+		self._add(SCORE_BANK)
+		if self.mult < MAX_MULT:
+			self.mult += 1
+		self._set_note("bonus")
+
 	# ---- simulation ---------------------------------------------------
 	def update(self, dt):
-		for i in (0, 1, 2):
-			if self.bumper_lit[i] > 0.0:
-				self.bumper_lit[i] -= dt
-		for i in (0, 1):
-			if self.sling_lit[i] > 0.0:
-				self.sling_lit[i] -= dt
+		for lit in (self.bumper_lit, self.sling_lit, self.saucer_lit):
+			for i in range(len(lit)):
+				if lit[i] > 0.0:
+					lit[i] -= dt
 		if self.note_time > 0.0:
 			self.note_time -= dt
 			if self.note_time <= 0.0:
@@ -215,11 +302,24 @@ class Pinball(object):
 		if self.state != self.PLAY:
 			return
 		self.play_time += h
+		if self.saucer_cool > 0.0:
+			self.saucer_cool -= h
+		if self.held >= 0:
+			self.hold_time -= h
+			if self.hold_time <= 0.0:
+				sx, sy, sr, ex, ey = self.saucers[self.held]
+				self.vx = ex + random.uniform(-25.0, 25.0)
+				self.vy = ey
+				self.held = -1
+				self.saucer_cool = 0.6
+			return
 		vx, vy = self.vx, self.vy + GRAVITY * h
 		bx, by = self.bx + vx * h, self.by + vy * h
 		R2 = R * R
 
 		segs = self.segs
+		if self.dropSegs:
+			segs = segs + [s for s in self.dropSegs if not self.drop_down[s[7]]]
 		if self.gate_closed:
 			segs = segs + [self.gate]
 		elif bx < 345.0:
@@ -253,10 +353,12 @@ class Pinball(object):
 				vy += ny * k + nx * j
 				self.sling_lit[idx] = 0.12
 				self._add(SCORE_SLING)
-			elif kind == K_TARGET and vn < -60.0:
-				self._hit_target(idx)
+			elif kind == K_STANDUP and vn < -60.0:
+				self._hit_standup(idx)
+			elif kind == K_DROP and vn < -60.0:
+				self._hit_drop(idx)
 
-		for i, (cx, cy, cr) in enumerate(BUMPERS):
+		for i, (cx, cy, cr) in enumerate(self.bumpers):
 			ex, ey = bx - cx, by - cy
 			d2 = ex * ex + ey * ey
 			rr = cr + R
@@ -277,6 +379,22 @@ class Pinball(object):
 			vx += random.uniform(-15.0, 15.0)
 			self.bumper_lit[i] = 0.15
 			self._add(SCORE_BUMPER)
+
+		for (cx, cy, cr) in self.posts:
+			ex, ey = bx - cx, by - cy
+			d2 = ex * ex + ey * ey
+			rr = cr + R
+			if d2 >= rr * rr or d2 == 0.0:
+				continue
+			d = math.sqrt(d2)
+			nx, ny = ex / d, ey / d
+			bx += nx * (rr - d)
+			by += ny * (rr - d)
+			vn = vx * nx + vy * ny
+			if vn < 0.0:
+				rest = 0.6 if vn < -40.0 else 0.0
+				vx -= (1.0 + rest) * vn * nx
+				vy -= (1.0 + rest) * vn * ny
 
 		rr = R + FLIP_RAD
 		for f in fl:
@@ -313,6 +431,24 @@ class Pinball(object):
 			vx *= k
 			vy *= k
 
+		# rollover lanes: count the moment the ball enters a lane
+		for i, (x1, y1, x2, y2) in enumerate(self.lanes):
+			inside = x1 <= bx <= x2 and y1 <= by <= y2
+			if inside and not self.lane_inside[i]:
+				self._hit_lane(i)
+			self.lane_inside[i] = inside
+
+		# saucers: catch a ball that rolls in
+		if self.saucer_cool <= 0.0:
+			for i, (cx, cy, cr, ex, ey) in enumerate(self.saucers):
+				if (bx - cx) ** 2 + (by - cy) ** 2 < cr * cr:
+					self.bx, self.by, self.vx, self.vy = cx, cy, 0.0, 0.0
+					self.held = i
+					self.hold_time = SAUCER_HOLD
+					self.saucer_lit[i] = SAUCER_HOLD
+					self._add(SCORE_SAUCER)
+					return
+
 		# ball fell back onto the plunger -> launch again
 		if bx > PLAY_R and by > PLUNGER_Y - R - 3.0 and sp2 < 900.0 and not self.gate_closed:
 			self._reset_ball()
@@ -334,15 +470,26 @@ class Pinball(object):
 		if by > H + R or bx < -R or bx > W + R or by < -R:
 			self._drain()
 
-	def _hit_target(self, idx):
-		self._add(SCORE_TARGET)
-		self.target_lit[idx] = True
-		if all(self.target_lit):
-			self._add(SCORE_ALL_TARGETS)
-			if self.mult < MAX_MULT:
-				self.mult += 1
-			self.target_lit = [False, False, False]
-			self._set_note("bonus")
+	def _hit_standup(self, idx):
+		self._add(SCORE_STANDUP)
+		self.standup_lit[idx] = True
+		if all(self.standup_lit):
+			self.standup_lit = [False] * len(self.standup_lit)
+			self._bank_done()
+
+	def _hit_drop(self, idx):
+		self._add(SCORE_DROP)
+		self.drop_down[idx] = True
+		if all(self.drop_down):
+			self.drop_down = [False] * len(self.drop_down)
+			self._bank_done()
+
+	def _hit_lane(self, idx):
+		self._add(SCORE_LANE)
+		self.lane_lit[idx] = True
+		if all(self.lane_lit):
+			self.lane_lit = [False] * len(self.lane_lit)
+			self._bank_done()
 
 	def _drain(self):
 		saved = self.play_time < BALL_SAVE_TIME and not self.save_used

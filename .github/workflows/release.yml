@@ -19,6 +19,7 @@ jobs:
         run: |
           python3 tools/test_engine.py > /dev/null
           python3 tools/test_solitaire.py
+          python3 tools/test_bubble.py
           sh tools/build.sh
       - name: Publish release
         env:
