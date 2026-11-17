@@ -10,7 +10,7 @@ from Screens.Screen import Screen
 
 from . import _
 
-VERSION = "0.3.000"
+VERSION = "0.3.001"
 
 
 def getScale():
@@ -32,10 +32,12 @@ def gameList():
 	# (title, function that opens the game) - add new games here
 	from .bubble import E2Bubble
 	from .solitaire import E2Solitaire
+	from .sudoku import E2Sudoku
 	return [
 		(_("Pinball"), openPinball),
 		(_("Solitaire"), lambda session: session.open(E2Solitaire)),
 		(_("Bubble Shooter"), lambda session: session.open(E2Bubble)),
+		(_("Sudoku"), lambda session: session.open(E2Sudoku)),
 	]
 
 

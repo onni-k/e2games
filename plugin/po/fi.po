@@ -170,3 +170,78 @@ msgstr "Yhdistä kolme tai useampi samanvärinen kupla, niin ne puhkeavat. Irti 
 
 msgid "Each shot that pops nothing brings a new row closer. Do not let the bubbles cross the red line."
 msgstr "Jokainen ohilaukaus tuo uuden rivin lähemmäs. Älä päästä kuplia punaisen viivan yli."
+
+msgid "Aim speed"
+msgstr "Tähtäysnopeus"
+
+msgid "GREEN: change aim speed"
+msgstr "VIHREÄ: vaihda tähtäysnopeutta"
+
+msgid "Slow"
+msgstr "Hidas"
+
+msgid "Normal"
+msgstr "Normaali"
+
+msgid "Fast"
+msgstr "Nopea"
+
+msgid "Very fast"
+msgstr "Hyvin nopea"
+
+msgid "Sudoku"
+msgstr "Sudoku"
+
+msgid "Difficulty"
+msgstr "Vaikeustaso"
+
+msgid "Easy"
+msgstr "Helppo"
+
+msgid "Medium"
+msgstr "Keskitaso"
+
+msgid "Hard"
+msgstr "Vaikea"
+
+msgid "Hints"
+msgstr "Vihjeet"
+
+msgid "Best time"
+msgstr "Paras aika"
+
+msgid "Next game: %s"
+msgstr "Seuraava peli: %s"
+
+msgid "Arrows: move"
+msgstr "Nuolet: liiku"
+
+msgid "1-9: enter a number"
+msgstr "1-9: syötä numero"
+
+msgid "0: clear the cell"
+msgstr "0: tyhjennä ruutu"
+
+msgid "OK: next number in the cell"
+msgstr "OK: seuraava numero ruutuun"
+
+msgid "GREEN: hint"
+msgstr "VIHREÄ: vihje"
+
+msgid "BLUE: difficulty of the next game"
+msgstr "SININEN: seuraavan pelin vaikeustaso"
+
+msgid "EXIT: save and back to menu"
+msgstr "EXIT: tallenna ja palaa valikkoon"
+
+msgid "Fill every row, column and 3x3 box with the numbers 1-9. Numbers that clash are shown in red."
+msgstr "Täytä jokainen rivi, sarake ja 3x3-ruutu numeroilla 1-9. Ristiriidassa olevat numerot näkyvät punaisina."
+
+msgid "An unfinished game is saved and continues next time."
+msgstr "Kesken jäänyt peli tallentuu ja jatkuu seuraavalla kerralla."
+
+msgid "Solved!"
+msgstr "Ratkaistu!"
+
+msgid "New best time!"
+msgstr "Uusi paras aika!"

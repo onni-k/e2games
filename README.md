@@ -1,8 +1,8 @@
 # E2games
 
-Games for Enigma2 receivers (developed for OpenViX). Games: **Pinball** (three tables), **Solitaire** (Klondike) and **Bubble Shooter**.
+Games for Enigma2 receivers (developed for OpenViX). Games: **Pinball** (three tables), **Solitaire** (Klondike), **Bubble Shooter** and **Sudoku**.
 
-- Native Enigma2 plugin (no pygame/SDL needed): `plugin.py` (menu), one screen module per game (`pinball.py`, `solitaire.py`, `bubble.py`) and a pure-Python engine for each (`pinball_engine.py`, `solitaire_engine.py`, `bubble_engine.py`).
+- Native Enigma2 plugin (no pygame/SDL needed): `plugin.py` (menu), one screen module per game (`pinball.py`, `solitaire.py`, `bubble.py`, `sudoku.py`) and a pure-Python engine for each (`pinball_engine.py`, `solitaire_engine.py`, `bubble_engine.py`, `sudoku_engine.py`).
 - Languages: English (source) and Finnish (`plugin/po/fi.po`), chosen automatically from the system language.
 - HD (1280x720) and FHD (1920x1080) skins are supported.
 
@@ -24,16 +24,24 @@ RED = undo, GREEN = card to the foundation, YELLOW = new game, BLUE = turn a car
 EXIT = cancel selection / back to the menu.
 
 Bubble Shooter: LEFT / RIGHT = aim (hold to turn), OK / UP = shoot, DOWN / BLUE = swap with the
-next bubble, YELLOW = new game, EXIT = back to the menu.
+next bubble, GREEN = aim speed (slow / normal / fast / very fast, remembered), YELLOW = new game,
+EXIT = back to the menu.
+
+Sudoku: arrows move, 1-9 enter a number, 0 clears, OK steps the number in the cell, RED = undo,
+GREEN = hint, YELLOW = new game, BLUE = difficulty of the next game (easy / medium / hard),
+EXIT = save and back to the menu. An unfinished game continues next time; best times are kept
+per difficulty (games solved without hints).
 
 ## Build
 
     python3 tools/make_assets.py   # regenerate pinball graphics (needs Pillow)
     python3 tools/make_cards.py    # regenerate playing cards (needs Pillow)
     python3 tools/make_bubbles.py  # regenerate bubble shooter graphics (needs Pillow)
+    python3 tools/make_sudoku.py   # regenerate sudoku graphics (needs Pillow)
     python3 tools/test_engine.py   # pinball physics self-test
     python3 tools/test_solitaire.py  # solitaire rules self-test
     python3 tools/test_bubble.py   # bubble shooter rules self-test
+    python3 tools/test_sudoku.py   # sudoku generator and rules self-test
     sh tools/build.sh              # compiles .mo and builds dist/*.ipk
 
 ## Releases

@@ -20,7 +20,7 @@ SHOOTER = (W / 2.0, 632.0)
 NEXT_POS = (52.0, 650.0)
 SPEED = 1100.0
 MAX_ANGLE = 1.35             # radians from straight up
-TURN_SPEED = 1.3             # radians per second while a key is held
+TURN_SPEED = 0.65            # default radians per second while a key is held
 HIT_DIST = D * 0.86
 COLORS = 6
 MAX_EFFECTS = 40
@@ -50,6 +50,7 @@ class BubbleShooter(object):
 		self.level = 1
 		self.angle = 0.0
 		self.turn = 0
+		self.turn_speed = TURN_SPEED
 		self.shot = None
 		self.current = 0
 		self.next = 0
@@ -142,7 +143,7 @@ class BubbleShooter(object):
 			if self.note_time <= 0.0:
 				self.note = ""
 		if self.turn:
-			self.rotate(self.turn * TURN_SPEED * dt)
+			self.rotate(self.turn * self.turn_speed * dt)
 		self._update_effects(dt)
 		if self.state == self.CLEARED:
 			self.wait -= dt

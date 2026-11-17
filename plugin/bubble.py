@@ -27,8 +27,11 @@ DOTS = 10
 DOT_SPACING = 40.0
 TICK_MS = 30
 KEY_TIMEOUT = 0.6             # stop turning if no repeat arrives (lost "break")
-TAP_TURN = 0.02               # radians turned by a single short press
+TAP_TURN = 0.025              # a single short press turns this many times the speed
+AIM_SPEEDS = (0.35, 0.65, 1.0, 1.3)   # radians per second, chosen with GREEN
+AIM_DEFAULT = 1
 SCORE_FILE = "/etc/enigma2/e2games_bubble.score"
+SPEED_FILE = "/etc/enigma2/e2games_bubble.speed"
 
 # Linux input key codes
 KEYS_LEFT = (105,)            # LEFT
@@ -101,6 +104,8 @@ class E2Bubble(Screen):
 		label("level", 40, 400, 170, 44, 34, "#ffffff")
 		label("rowsCaption", 210, 370, 220, 30, 22, "#8088b0")
 		label("rows", 210, 400, 200, 44, 34, "#ff8070")
+		label("speedCaption", 40, 470, 380, 30, 22, "#8088b0")
+		label("speed", 40, 500, 380, 40, 30, "#ffffff")
 		label("nextCaption", FIELD_X + 4, FIELD_Y + be.NEXT_POS[1] - 62, 100, 26, 18, "#8088b0", "center")
 		label("helpCaption", 860, 30, 390, 36, 26, "#96d7ff")
 		parts.append('<widget name="help" position="%d,%d" size="%d,%d" font="Regular;%d" halign="left" valign="top" foregroundColor="#c8cce0" backgroundColor="#000000" transparent="1" zPosition="9" />' % (
@@ -125,11 +130,14 @@ class E2Bubble(Screen):
 		self["rowsCaption"] = Label(_("New row in"))
 		self["rows"] = Label("")
 		self["nextCaption"] = Label(_("Next"))
+		self["speedCaption"] = Label(_("Aim speed"))
+		self["speed"] = Label("")
 		self["helpCaption"] = Label(_("Controls"))
 		self["help"] = Label("\n".join((
 			_("LEFT / RIGHT: aim (hold to turn)"),
 			_("OK / UP: shoot"),
 			_("DOWN / BLUE: swap with the next bubble"),
+			_("GREEN: change aim speed"),
 			_("YELLOW: new game"),
 			_("EXIT: back to menu"),
 			"",
@@ -141,10 +149,15 @@ class E2Bubble(Screen):
 		self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
 			"cancel": self.keyExit,
 			"yellow": self.keyNewGame,
+			"green": self.keyAimSpeed,
 		}, -1)
 
 		self.game = be.BubbleShooter(highscore=readNumber(SCORE_FILE))
 		self.savedHigh = self.game.highscore
+		self.aimSpeed = readNumber(SPEED_FILE, AIM_DEFAULT)
+		if not 0 <= self.aimSpeed < len(AIM_SPEEDS):
+			self.aimSpeed = AIM_DEFAULT
+		self.game.turn_speed = AIM_SPEEDS[self.aimSpeed]
 		self.pixmaps = {}
 		self.drawn = {}            # cache of what each widget currently shows
 		self.keysHeld = {}         # "L" / "R" -> time of the last key event
@@ -192,6 +205,11 @@ class E2Bubble(Screen):
 	def keyExit(self):
 		self.close()
 
+	def keyAimSpeed(self):
+		self.aimSpeed = (self.aimSpeed + 1) % len(AIM_SPEEDS)
+		self.game.turn_speed = AIM_SPEEDS[self.aimSpeed]
+		writeNumber(SPEED_FILE, self.aimSpeed)
+
 	def keyNewGame(self):
 		self.storeHighscore()
 		self.game.new_game()
@@ -208,7 +226,8 @@ class E2Bubble(Screen):
 					self.keysHeld.pop(group, None)
 				else:
 					if flag == 0 and group not in self.keysHeld:
-						self.game.rotate(-TAP_TURN if group == "L" else TAP_TURN)
+						tap = TAP_TURN * self.game.turn_speed
+						self.game.rotate(-tap if group == "L" else tap)
 					self.keysHeld[group] = monotonic()
 				self.applyTurn()
 				return 1
@@ -330,6 +349,7 @@ class E2Bubble(Screen):
 		self.setText("score", str(game.score))
 		self.setText("high", str(game.highscore))
 		self.setText("level", str(game.level))
+		self.setText("speed", (_("Slow"), _("Normal"), _("Fast"), _("Very fast"))[self.aimSpeed])
 		self.setText("rows", str(game.shots_per_row - game.misses) if playing else "")
 		if game.state == game.OVER:
 			msg = _("GAME OVER")
