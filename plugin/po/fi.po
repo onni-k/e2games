@@ -245,3 +245,42 @@ msgstr "Ratkaistu!"
 
 msgid "New best time!"
 msgstr "Uusi paras aika!"
+
+msgid "Blocks"
+msgstr "Palikat"
+
+msgid "Lines"
+msgstr "Rivit"
+
+msgid "Hold"
+msgstr "Varasto"
+
+msgid "LEFT / RIGHT: move"
+msgstr "VASEN / OIKEA: siirrä"
+
+msgid "UP: turn clockwise"
+msgstr "YLÖS: käännä myötäpäivään"
+
+msgid "RED: turn the other way"
+msgstr "PUNAINEN: käännä toiseen suuntaan"
+
+msgid "DOWN: drop faster (hold)"
+msgstr "ALAS: pudota nopeammin (pidä pohjassa)"
+
+msgid "OK: drop at once"
+msgstr "OK: pudota heti"
+
+msgid "GREEN: hold the piece for later"
+msgstr "VIHREÄ: siirrä palikka varastoon"
+
+msgid "BLUE: pause"
+msgstr "SININEN: tauko"
+
+msgid "Fill whole rows to clear them. The more rows at once, the more points. Every ten rows the blocks fall faster."
+msgstr "Täytä kokonaisia rivejä, niin ne poistuvat. Mitä useampi rivi kerralla, sitä enemmän pisteitä. Joka kymmenennen rivin jälkeen palikat putoavat nopeammin."
+
+msgid "Paused"
+msgstr "Tauko"
+
+msgid "Press BLUE to continue"
+msgstr "Jatka painamalla SINISTÄ"
