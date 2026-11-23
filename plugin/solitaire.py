@@ -2,9 +2,10 @@
 # E2games - Klondike solitaire screen (Enigma2 front end for solitaire_engine).
 from enigma import ePoint, eSize, eTimer, getDesktop
 
-from Components.ActionMap import ActionMap
+from Components.ActionMap import HelpableActionMap
 from Components.Label import Label
 from Components.Pixmap import Pixmap
+from Screens.HelpMenu import HelpableScreen
 from Screens.Screen import Screen
 from Tools.Directories import resolveFilename, SCOPE_PLUGINS
 from Tools.LoadPixmap import LoadPixmap
@@ -25,7 +26,7 @@ TOP_PILES = ("S", "W", "F0", "F1", "F2", "F3")
 TOP_COLS = (0, 1, 3, 4, 5, 6)   # column above which each top pile sits
 
 
-class E2Solitaire(Screen):
+class E2Solitaire(Screen, HelpableScreen):
 	def __init__(self, session):
 		fhd = getDesktop(0).size().width() >= 1920
 		self.cardScale = 1.5 if fhd else 1.0
@@ -74,6 +75,7 @@ class E2Solitaire(Screen):
 		self.skin = "\n".join(parts)
 
 		Screen.__init__(self, session)
+		HelpableScreen.__init__(self)
 		self.setTitle("E2games - " + _("Solitaire"))
 
 		for name in self.cardNames:
@@ -97,19 +99,24 @@ class E2Solitaire(Screen):
 			_("GREEN: card to the foundation"),
 			_("YELLOW: new game"),
 			_("BLUE: turn a card from the stock"),
-			_("EXIT: cancel selection / back to menu"))))
+			_("EXIT: cancel selection / back to menu"),
+			_("HELP: remote control help"))))
 
-		self["actions"] = ActionMap(["OkCancelActions", "DirectionActions", "ColorActions"], {
-			"ok": self.keyOk,
-			"cancel": self.keyCancel,
-			"left": self.keyLeft,
-			"right": self.keyRight,
-			"up": self.keyUp,
-			"down": self.keyDown,
-			"red": self.keyUndo,
-			"green": self.keyFoundation,
-			"yellow": self.keyNewGame,
-			"blue": self.keyDraw,
+		self["actions"] = HelpableActionMap(self, "OkCancelActions", {
+			"ok": (self.keyOk, _("Pick up or place cards")),
+			"cancel": (self.keyCancel, _("Cancel selection / back to menu")),
+		}, -1)
+		self["directionActions"] = HelpableActionMap(self, "DirectionActions", {
+			"left": (self.keyLeft, _("Cursor left")),
+			"right": (self.keyRight, _("Cursor right")),
+			"up": (self.keyUp, _("Cursor up / select more cards")),
+			"down": (self.keyDown, _("Cursor down")),
+		}, -1)
+		self["colorActions"] = HelpableActionMap(self, "ColorActions", {
+			"red": (self.keyUndo, _("Undo")),
+			"green": (self.keyFoundation, _("Card to the foundation")),
+			"yellow": (self.keyNewGame, _("New game")),
+			"blue": (self.keyDraw, _("Turn a card from the stock")),
 		}, -1)
 
 		self.deal = Klondike()

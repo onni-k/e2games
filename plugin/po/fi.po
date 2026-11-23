@@ -284,3 +284,123 @@ msgstr "Tauko"
 
 msgid "Press BLUE to continue"
 msgstr "Jatka painamalla SINISTÄ"
+
+msgid "Play the selected game"
+msgstr "Pelaa valittua peliä"
+
+msgid "Close"
+msgstr "Sulje"
+
+msgid "Back to menu"
+msgstr "Takaisin valikkoon"
+
+msgid "Launch the ball (hold and release)"
+msgstr "Laukaise pallo (pidä pohjassa ja vapauta)"
+
+msgid "Left flipper"
+msgstr "Vasen maila"
+
+msgid "Right flipper"
+msgstr "Oikea maila"
+
+msgid "Both flippers"
+msgstr "Molemmat mailat"
+
+msgid "Change table (between games)"
+msgstr "Vaihda pöytää (pelien välissä)"
+
+msgid "Shoot"
+msgstr "Ammu"
+
+msgid "Aim left (hold to turn)"
+msgstr "Tähtää vasemmalle (pidä pohjassa)"
+
+msgid "Aim right (hold to turn)"
+msgstr "Tähtää oikealle (pidä pohjassa)"
+
+msgid "Swap with the next bubble"
+msgstr "Vaihda seuraavaan kuplaan"
+
+msgid "Change aim speed"
+msgstr "Vaihda tähtäysnopeutta"
+
+msgid "New game"
+msgstr "Uusi peli"
+
+msgid "Drop at once"
+msgstr "Pudota heti"
+
+msgid "Move left"
+msgstr "Siirrä vasemmalle"
+
+msgid "Move right"
+msgstr "Siirrä oikealle"
+
+msgid "Move up"
+msgstr "Siirrä ylös"
+
+msgid "Move down"
+msgstr "Siirrä alas"
+
+msgid "Turn clockwise"
+msgstr "Käännä myötäpäivään"
+
+msgid "Drop faster (hold)"
+msgstr "Pudota nopeammin (pidä pohjassa)"
+
+msgid "Turn the other way"
+msgstr "Käännä toiseen suuntaan"
+
+msgid "Hold the piece for later"
+msgstr "Siirrä palikka varastoon"
+
+msgid "Pause"
+msgstr "Tauko"
+
+msgid "Pick up or place cards"
+msgstr "Poimi tai aseta kortit"
+
+msgid "Cancel selection / back to menu"
+msgstr "Peru valinta / takaisin valikkoon"
+
+msgid "Cursor left"
+msgstr "Kohdistin vasemmalle"
+
+msgid "Cursor right"
+msgstr "Kohdistin oikealle"
+
+msgid "Cursor up / select more cards"
+msgstr "Kohdistin ylös / valitse lisää kortteja"
+
+msgid "Cursor down"
+msgstr "Kohdistin alas"
+
+msgid "Undo"
+msgstr "Peru siirto"
+
+msgid "Card to the foundation"
+msgstr "Kortti loppupinoon"
+
+msgid "Turn a card from the stock"
+msgstr "Käännä kortti pakasta"
+
+msgid "Next number in the cell"
+msgstr "Seuraava numero ruutuun"
+
+msgid "Save and back to menu"
+msgstr "Tallenna ja palaa valikkoon"
+
+msgid "Hint"
+msgstr "Vihje"
+
+msgid "Difficulty of the next game"
+msgstr "Seuraavan pelin vaikeustaso"
+
+msgid "Clear the cell"
+msgstr "Tyhjennä ruutu"
+
+msgid "Enter a number"
+msgstr "Syötä numero"
+
+msgid "HELP: remote control help"
+msgstr "HELP: kaukosäätimen ohje"

@@ -2,15 +2,16 @@
 # E2games - a small collection of games for Enigma2 receivers.
 from enigma import getDesktop
 
-from Components.ActionMap import ActionMap
+from Components.ActionMap import HelpableActionMap
 from Components.Label import Label
 from Components.MenuList import MenuList
 from Plugins.Plugin import PluginDescriptor
+from Screens.HelpMenu import HelpableScreen
 from Screens.Screen import Screen
 
 from . import _
 
-VERSION = "0.3.002"
+VERSION = "0.3.003"
 
 
 def getScale():
@@ -43,7 +44,7 @@ def gameList():
 	]
 
 
-class E2gamesMenu(Screen):
+class E2gamesMenu(Screen, HelpableScreen):
 	def __init__(self, session):
 		s = getScale()
 		v = lambda x: int(round(x * s))
@@ -62,15 +63,16 @@ class E2gamesMenu(Screen):
 			v(40), v(115), v(480), v(200), v(26), v(40),
 			v(20), v(330), v(520), v(34), v(19))
 		Screen.__init__(self, session)
+		HelpableScreen.__init__(self)
 		self.setTitle("E2games")
 		self.games = gameList()
 		self["title"] = Label("E2games")
 		self["subtitle"] = Label(_("Select a game"))
 		self["menu"] = MenuList([g[0] for g in self.games])
 		self["hint"] = Label(_("OK: play    EXIT: close") + "    v" + VERSION)
-		self["actions"] = ActionMap(["OkCancelActions"], {
-			"ok": self.keyOk,
-			"cancel": self.close,
+		self["actions"] = HelpableActionMap(self, "OkCancelActions", {
+			"ok": (self.keyOk, _("Play the selected game")),
+			"cancel": (self.close, _("Close")),
 		}, -1)
 
 	def keyOk(self):

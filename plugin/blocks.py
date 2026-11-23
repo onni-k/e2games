@@ -8,9 +8,10 @@ except ImportError:
 
 from enigma import eActionMap, ePoint, eTimer, getDesktop
 
-from Components.ActionMap import ActionMap
+from Components.ActionMap import HelpableActionMap
 from Components.Label import Label
 from Components.Pixmap import Pixmap
+from Screens.HelpMenu import HelpableScreen
 from Screens.Screen import Screen
 from Tools.Directories import resolveFilename, SCOPE_PLUGINS
 from Tools.LoadPixmap import LoadPixmap
@@ -27,8 +28,8 @@ BOX_W, HOLD_H, NEXT_H = 150, 110, 330
 NEXT_SLOT = 110
 TICK_MS = 30
 KEY_TIMEOUT = 0.6             # treat a key as released if no repeat arrives
-MOVE_DELAY = 0.18             # auto-repeat of LEFT / RIGHT
-MOVE_REPEAT = 0.05
+MOVE_DELAY = 0.3              # LEFT / RIGHT: a held key starts repeating after this
+MOVE_REPEAT = 0.1             # and then moves at most one cell per this many seconds
 SCORE_FILE = "/etc/enigma2/e2games_blocks.score"
 
 # Linux input key codes
@@ -65,7 +66,7 @@ def previewCells(piece):
 	return [(ox + c * CELL, oy + r * CELL) for r, c in cells]
 
 
-class E2Blocks(Screen):
+class E2Blocks(Screen, HelpableScreen):
 	def __init__(self, session):
 		fhd = getDesktop(0).size().width() >= 1920
 		self.wellScale = 1.5 if fhd else 1.0
@@ -118,6 +119,7 @@ class E2Blocks(Screen):
 		self.skin = "\n".join(parts)
 
 		Screen.__init__(self, session)
+		HelpableScreen.__init__(self)
 		self.setTitle("E2games - " + _("Blocks"))
 
 		for name in self.cellNames:
@@ -145,27 +147,44 @@ class E2Blocks(Screen):
 			_("BLUE: pause"),
 			_("YELLOW: new game"),
 			_("EXIT: back to menu"),
+			_("HELP: remote control help"),
 			"",
 			_("Fill whole rows to clear them. The more rows at once, the more points. Every ten rows the blocks fall faster."))))
 		self["message"] = Label("")
 
-		self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
-			"cancel": self.keyExit,
-			"yellow": self.keyNewGame,
-			"blue": self.keyPause,
+		self["actions"] = HelpableActionMap(self, "OkCancelActions", {
+			"ok": (self.keyHelpOnly, _("Drop at once")),
+			"cancel": (self.keyExit, _("Back to menu")),
+		}, -1)
+		self["directionActions"] = HelpableActionMap(self, "DirectionActions", {
+			"left": (self.keyHelpOnly, _("Move left")),
+			"right": (self.keyHelpOnly, _("Move right")),
+			"up": (self.keyHelpOnly, _("Turn clockwise")),
+			"down": (self.keyHelpOnly, _("Drop faster (hold)")),
+		}, -1)
+		self["colorActions"] = HelpableActionMap(self, "ColorActions", {
+			"red": (self.keyHelpOnly, _("Turn the other way")),
+			"green": (self.keyHelpOnly, _("Hold the piece for later")),
+			"yellow": (self.keyNewGame, _("New game")),
+			"blue": (self.keyPause, _("Pause")),
 		}, -1)
 
 		self.game = be.Blocks(highscore=readNumber(SCORE_FILE))
 		self.savedHigh = self.game.highscore
 		self.pixmaps = {}
 		self.drawn = {}
-		self.keysHeld = {}         # key code -> [time of last event, time of next auto-repeat]
+		self.keysHeld = {}         # key code -> [time of last event, time pressed, time of last move]
 		self.keysBound = False
 		self.lastTick = monotonic()
 		self.gameTimer = eTimer()
 		self.gameTimer.callback.append(self.tick)
 		self.onLayoutFinish.append(self.gameStart)
 		self.onClose.append(self.gameStop)
+
+	def keyHelpOnly(self):
+		# keys read directly from the remote (see rawKey) are listed in the
+		# HELP screen through this placeholder; the game itself handles them
+		pass
 
 	def px(self, x):
 		return int(round(x * self.wellScale))
@@ -216,12 +235,18 @@ class E2Blocks(Screen):
 			game = self.game
 			now = monotonic()
 			if key in (KEY_LEFT, KEY_RIGHT, KEY_DOWN):
+				# A press moves exactly one cell. Only the remote's own repeat
+				# messages (key held down) move further, one cell at a time.
 				if flag == 1:
 					self.keysHeld.pop(key, None)
 				elif key in self.keysHeld:
-					self.keysHeld[key][0] = now
+					held = self.keysHeld[key]
+					held[0] = now
+					if key != KEY_DOWN and now - held[1] >= MOVE_DELAY and now - held[2] >= MOVE_REPEAT:
+						held[2] = now
+						game.move(-1 if key == KEY_LEFT else 1)
 				elif flag == 0:
-					self.keysHeld[key] = [now, now + MOVE_DELAY]
+					self.keysHeld[key] = [now, now, now]
 					if key != KEY_DOWN:
 						game.move(-1 if key == KEY_LEFT else 1)
 				game.set_soft_drop(KEY_DOWN in self.keysHeld)
@@ -263,13 +288,8 @@ class E2Blocks(Screen):
 			return
 		game = self.game
 		for key in list(self.keysHeld):
-			last, nextMove = self.keysHeld[key]
-			if now - last > KEY_TIMEOUT:
+			if now - self.keysHeld[key][0] > KEY_TIMEOUT:
 				del self.keysHeld[key]
-				continue
-			if key != KEY_DOWN and now >= nextMove:
-				game.move(-1 if key == KEY_LEFT else 1)
-				self.keysHeld[key][1] = now + MOVE_REPEAT
 		game.set_soft_drop(KEY_DOWN in self.keysHeld)
 		before = game.state
 		game.update(dt)

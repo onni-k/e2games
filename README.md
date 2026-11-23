@@ -13,6 +13,8 @@ Games for Enigma2 receivers (developed for OpenViX). Games: **Pinball** (three t
 
 ## Controls
 
+In every game the HELP key opens the receiver's own remote control help for that screen.
+
 Pinball: LEFT / RED = left flipper, RIGHT / BLUE = right flipper, UP = both flippers,
 OK / DOWN = hold and release to launch, YELLOW = change table (between games), EXIT = back to the menu.
 Tables: Classic (stand-up targets), Target Bank (drop targets and a saucer), Star Lanes (rollover lanes,
@@ -32,7 +34,7 @@ GREEN = hint, YELLOW = new game, BLUE = difficulty of the next game (easy / medi
 EXIT = save and back to the menu. An unfinished game continues next time; best times are kept
 per difficulty (games solved without hints).
 
-Blocks: LEFT / RIGHT = move (hold to repeat), UP = turn clockwise, RED = turn the other way,
+Blocks: LEFT / RIGHT = move one cell (hold to repeat), UP = turn clockwise, RED = turn the other way,
 DOWN = drop faster (hold), OK = drop at once, GREEN = hold the piece for later, BLUE = pause,
 YELLOW = new game, EXIT = back to the menu.
 

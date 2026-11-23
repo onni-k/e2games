@@ -5,9 +5,10 @@ import os
 
 from enigma import ePoint, eTimer, getDesktop
 
-from Components.ActionMap import ActionMap, NumberActionMap
+from Components.ActionMap import HelpableActionMap
 from Components.Label import Label
 from Components.Pixmap import Pixmap
+from Screens.HelpMenu import HelpableScreen
 from Screens.Screen import Screen
 from Tools.Directories import resolveFilename, SCOPE_PLUGINS
 from Tools.LoadPixmap import LoadPixmap
@@ -51,7 +52,7 @@ def saveBest(best):
 		pass
 
 
-class E2Sudoku(Screen):
+class E2Sudoku(Screen, HelpableScreen):
 	def __init__(self, session):
 		fhd = getDesktop(0).size().width() >= 1920
 		self.boardScale = 1.5 if fhd else 1.0
@@ -90,6 +91,7 @@ class E2Sudoku(Screen):
 		self.skin = "\n".join(parts)
 
 		Screen.__init__(self, session)
+		HelpableScreen.__init__(self)
 		self.setTitle("E2games - " + _("Sudoku"))
 
 		for i in range(81):
@@ -119,25 +121,32 @@ class E2Sudoku(Screen):
 			_("YELLOW: new game"),
 			_("BLUE: difficulty of the next game"),
 			_("EXIT: save and back to menu"),
+			_("HELP: remote control help"),
 			"",
 			_("Fill every row, column and 3x3 box with the numbers 1-9. Numbers that clash are shown in red."),
 			"",
 			_("An unfinished game is saved and continues next time."))))
 
-		self["actions"] = ActionMap(["OkCancelActions", "DirectionActions", "ColorActions"], {
-			"ok": self.keyOk,
-			"cancel": self.keyExit,
-			"left": self.keyLeft,
-			"right": self.keyRight,
-			"up": self.keyUp,
-			"down": self.keyDown,
-			"red": self.keyUndo,
-			"green": self.keyHint,
-			"yellow": self.keyNewGame,
-			"blue": self.keyDifficulty,
+		self["actions"] = HelpableActionMap(self, "OkCancelActions", {
+			"ok": (self.keyOk, _("Next number in the cell")),
+			"cancel": (self.keyExit, _("Save and back to menu")),
 		}, -1)
-		self["numbers"] = NumberActionMap(["NumberActions"], dict(
-			(str(n), self.keyNumber) for n in range(10)), -1)
+		self["directionActions"] = HelpableActionMap(self, "DirectionActions", {
+			"left": (self.keyLeft, _("Move left")),
+			"right": (self.keyRight, _("Move right")),
+			"up": (self.keyUp, _("Move up")),
+			"down": (self.keyDown, _("Move down")),
+		}, -1)
+		self["colorActions"] = HelpableActionMap(self, "ColorActions", {
+			"red": (self.keyUndo, _("Undo")),
+			"green": (self.keyHint, _("Hint")),
+			"yellow": (self.keyNewGame, _("New game")),
+			"blue": (self.keyDifficulty, _("Difficulty of the next game")),
+		}, -1)
+		numbers = {"0": (lambda: self.keyNumber(0), _("Clear the cell"))}
+		for n in range(1, 10):
+			numbers[str(n)] = (lambda n=n: self.keyNumber(n), _("Enter a number"))
+		self["numbers"] = HelpableActionMap(self, "NumberActions", numbers, -1)
 
 		self.puzzle = se.Sudoku()
 		self.pixmaps = {}

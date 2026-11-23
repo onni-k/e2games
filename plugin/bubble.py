@@ -8,9 +8,10 @@ except ImportError:
 
 from enigma import eActionMap, ePoint, eTimer, getDesktop
 
-from Components.ActionMap import ActionMap
+from Components.ActionMap import HelpableActionMap
 from Components.Label import Label
 from Components.Pixmap import Pixmap
+from Screens.HelpMenu import HelpableScreen
 from Screens.Screen import Screen
 from Tools.Directories import resolveFilename, SCOPE_PLUGINS
 from Tools.LoadPixmap import LoadPixmap
@@ -56,7 +57,7 @@ def writeNumber(path, value):
 		pass
 
 
-class E2Bubble(Screen):
+class E2Bubble(Screen, HelpableScreen):
 	def __init__(self, session):
 		fhd = getDesktop(0).size().width() >= 1920
 		self.fieldScale = 1.5 if fhd else 1.0
@@ -115,6 +116,7 @@ class E2Bubble(Screen):
 		self.skin = "\n".join(parts)
 
 		Screen.__init__(self, session)
+		HelpableScreen.__init__(self)
 		self.setTitle("E2games - " + _("Bubble Shooter"))
 
 		for name in self.spriteNames:
@@ -140,16 +142,27 @@ class E2Bubble(Screen):
 			_("GREEN: change aim speed"),
 			_("YELLOW: new game"),
 			_("EXIT: back to menu"),
+			_("HELP: remote control help"),
 			"",
 			_("Join three or more bubbles of the same colour to pop them. Bubbles left hanging fall down for extra points."),
 			"",
 			_("Each shot that pops nothing brings a new row closer. Do not let the bubbles cross the red line."))))
 		self["message"] = Label("")
 
-		self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
-			"cancel": self.keyExit,
-			"yellow": self.keyNewGame,
-			"green": self.keyAimSpeed,
+		self["actions"] = HelpableActionMap(self, "OkCancelActions", {
+			"ok": (self.keyHelpOnly, _("Shoot")),
+			"cancel": (self.keyExit, _("Back to menu")),
+		}, -1)
+		self["directionActions"] = HelpableActionMap(self, "DirectionActions", {
+			"left": (self.keyHelpOnly, _("Aim left (hold to turn)")),
+			"right": (self.keyHelpOnly, _("Aim right (hold to turn)")),
+			"up": (self.keyHelpOnly, _("Shoot")),
+			"down": (self.keyHelpOnly, _("Swap with the next bubble")),
+		}, -1)
+		self["colorActions"] = HelpableActionMap(self, "ColorActions", {
+			"green": (self.keyAimSpeed, _("Change aim speed")),
+			"yellow": (self.keyNewGame, _("New game")),
+			"blue": (self.keyHelpOnly, _("Swap with the next bubble")),
 		}, -1)
 
 		self.game = be.BubbleShooter(highscore=readNumber(SCORE_FILE))
@@ -168,6 +181,11 @@ class E2Bubble(Screen):
 		self.gameTimer.callback.append(self.tick)
 		self.onLayoutFinish.append(self.gameStart)
 		self.onClose.append(self.gameStop)
+
+	def keyHelpOnly(self):
+		# keys read directly from the remote (see rawKey) are listed in the
+		# HELP screen through this placeholder; the game itself handles them
+		pass
 
 	def px(self, x):
 		return int(round(x * self.fieldScale))

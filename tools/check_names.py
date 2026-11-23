@@ -12,7 +12,8 @@ setTitle shown skinAttributes skinName stacks standAlone stand_alone summaries v
 execBegin execEnd doClose show getScreenPath getTitle setFocus setKeyboardModeNone setKeyboardModeAscii
 restoreKeyboardMode saveKeyboardMode setDesktop setAnimationMode getRelatedScreen callLater
 screenContentChanged applySkin addToStack createSummary addSummary removeSummary
-keys get pop update clear copy setdefault popitem fromkeys""".split())
+keys get pop update clear copy setdefault popitem fromkeys
+showHelp callHelpAction key_help helpActions""".split())
 ALLOWED = {"session", "skin", "close", "setTitle", "execing", "onLayoutFinish", "onClose", "instance"}
 
 bad = []

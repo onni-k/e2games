@@ -8,9 +8,10 @@ except ImportError:
 
 from enigma import eActionMap, ePoint, eTimer, getDesktop
 
-from Components.ActionMap import ActionMap
+from Components.ActionMap import HelpableActionMap
 from Components.Label import Label
 from Components.Pixmap import Pixmap
+from Screens.HelpMenu import HelpableScreen
 from Screens.Screen import Screen
 from Tools.Directories import resolveFilename, SCOPE_PLUGINS
 from Tools.LoadPixmap import LoadPixmap
@@ -71,7 +72,7 @@ def tableHints():
 	]
 
 
-class E2Pinball(Screen):
+class E2Pinball(Screen, HelpableScreen):
 	def __init__(self, session, table=0):
 		self.tableIndex = table if 0 <= table < len(pe.TABLES) else 0
 		spec = pe.TABLES[self.tableIndex]
@@ -140,6 +141,7 @@ class E2Pinball(Screen):
 		self.skin = "\n".join(parts)
 
 		Screen.__init__(self, session)
+		HelpableScreen.__init__(self)
 		self.setTitle("E2games - " + _("Pinball"))
 
 		for name in self.lightNames + ["plunger", "flipL", "flipR", "ball"]:
@@ -163,13 +165,25 @@ class E2Pinball(Screen):
 			_("OK / DOWN: hold and release to launch the ball"),
 			_("YELLOW: change table (between games)"),
 			_("EXIT: back to menu"),
+			_("HELP: remote control help"),
 			"",
 			tableHints()[self.tableIndex])))
 		self["message"] = Label("")
 
-		self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
-			"cancel": self.keyExit,
-			"yellow": self.keyNextTable,
+		self["actions"] = HelpableActionMap(self, "OkCancelActions", {
+			"ok": (self.keyHelpOnly, _("Launch the ball (hold and release)")),
+			"cancel": (self.keyExit, _("Back to menu")),
+		}, -1)
+		self["directionActions"] = HelpableActionMap(self, "DirectionActions", {
+			"left": (self.keyHelpOnly, _("Left flipper")),
+			"right": (self.keyHelpOnly, _("Right flipper")),
+			"up": (self.keyHelpOnly, _("Both flippers")),
+			"down": (self.keyHelpOnly, _("Launch the ball (hold and release)")),
+		}, -1)
+		self["colorActions"] = HelpableActionMap(self, "ColorActions", {
+			"red": (self.keyHelpOnly, _("Left flipper")),
+			"blue": (self.keyHelpOnly, _("Right flipper")),
+			"yellow": (self.keyNextTable, _("Change table (between games)")),
 		}, -1)
 
 		writeNumber(TABLE_FILE, self.tableIndex)
@@ -184,6 +198,11 @@ class E2Pinball(Screen):
 		self.gameTimer.callback.append(self.tick)
 		self.onLayoutFinish.append(self.gameStart)
 		self.onClose.append(self.gameStop)
+
+	def keyHelpOnly(self):
+		# keys read directly from the remote (see rawKey) are listed in the
+		# HELP screen through this placeholder; the game itself handles them
+		pass
 
 	def px(self, x):
 		return int(round(x * self.tableScale))
