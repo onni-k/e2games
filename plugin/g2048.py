@@ -77,8 +77,8 @@ class E2Game2048(Screen, HelpableScreen):
 		label("moves", 40, 400, 300, 44, 34, "#ffffff")
 		label("helpCaption", 950, 30, 300, 36, 26, "#f2b179")
 		label("help", 950, 80, 300, 600, 19, "#d8d0c8", valign="top")
-		# message on a dark see-through panel over the board (alpha 0x40 = mostly opaque)
-		parts.append('<widget name="message" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#ffffff" backgroundColor="#40000000" transparent="0" zPosition="6" />' % (
+		# message on a black panel over the board, shown only while there is a message
+		parts.append('<widget name="message" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#ffffff" backgroundColor="#000000" transparent="0" zPosition="6" />' % (
 			v(BOARD_X + 20), v(BOARD_Y + 190), v(ge.BOARD - 40), v(170), v(32)))
 		parts.append("</screen>")
 		self.skin = "\n".join(parts)

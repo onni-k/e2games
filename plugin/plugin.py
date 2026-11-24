@@ -11,7 +11,7 @@ from Screens.Screen import Screen
 
 from . import _
 
-VERSION = "0.3.004"
+VERSION = "0.4.000"
 
 
 def getScale():
