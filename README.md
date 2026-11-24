@@ -1,8 +1,8 @@
 # E2games
 
-Games for Enigma2 receivers (developed for OpenViX). Games: **Pinball** (three tables), **Solitaire** (Klondike), **Bubble Shooter**, **Sudoku** and **Blocks** (falling blocks).
+Games for Enigma2 receivers (developed for OpenViX). Games: **Pinball** (three tables), **Solitaire** (Klondike), **Bubble Shooter**, **Sudoku**, **Blocks** (falling blocks) and **2048**.
 
-- Native Enigma2 plugin (no pygame/SDL needed): `plugin.py` (menu), one screen module per game (`pinball.py`, `solitaire.py`, `bubble.py`, `sudoku.py`, `blocks.py`) and a pure-Python engine for each (`pinball_engine.py`, `solitaire_engine.py`, `bubble_engine.py`, `sudoku_engine.py`, `blocks_engine.py`).
+- Native Enigma2 plugin (no pygame/SDL needed): `plugin.py` (menu), one screen module per game (`pinball.py`, `solitaire.py`, `bubble.py`, `sudoku.py`, `blocks.py`, `g2048.py`) and a pure-Python engine for each (`pinball_engine.py`, `solitaire_engine.py`, `bubble_engine.py`, `sudoku_engine.py`, `blocks_engine.py`, `g2048_engine.py`).
 - Languages: English (source) and Finnish (`plugin/po/fi.po`), chosen automatically from the system language.
 - HD (1280x720) and FHD (1920x1080) skins are supported.
 
@@ -38,6 +38,9 @@ Blocks: LEFT / RIGHT = move one cell (hold to repeat), UP = turn clockwise, RED 
 DOWN = drop faster (hold), OK = drop at once, GREEN = hold the piece for later, BLUE = pause,
 YELLOW = new game, EXIT = back to the menu.
 
+2048: arrows slide the tiles, RED = undo the last move, YELLOW = new game, OK = keep playing after
+2048 / new game when no moves are left, EXIT = save and back to the menu.
+
 ## Build
 
     python3 tools/make_assets.py   # regenerate pinball graphics (needs Pillow)
@@ -45,11 +48,13 @@ YELLOW = new game, EXIT = back to the menu.
     python3 tools/make_bubbles.py  # regenerate bubble shooter graphics (needs Pillow)
     python3 tools/make_sudoku.py   # regenerate sudoku graphics (needs Pillow)
     python3 tools/make_blocks.py   # regenerate falling blocks graphics (needs Pillow)
+    python3 tools/make_2048.py     # regenerate 2048 graphics (needs Pillow)
     python3 tools/test_engine.py   # pinball physics self-test
     python3 tools/test_solitaire.py  # solitaire rules self-test
     python3 tools/test_bubble.py   # bubble shooter rules self-test
     python3 tools/test_sudoku.py   # sudoku generator and rules self-test
     python3 tools/test_blocks.py   # falling blocks rules self-test
+    python3 tools/test_2048.py     # 2048 rules self-test
     sh tools/build.sh              # compiles .mo and builds dist/*.ipk
 
 ## Releases

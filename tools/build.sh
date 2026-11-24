@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 VERSION=$(sed -n 's/^VERSION = "\(.*\)"/\1/p' plugin/plugin.py)
 DEST=usr/lib/enigma2/python/Plugins/Extensions/E2games
 python3 -c 'import ast, glob, sys; [ast.parse(open(f).read(), f) for f in glob.glob("plugin/*.py")]'
-python3 tools/check_names.py plugin/plugin.py plugin/pinball.py plugin/solitaire.py plugin/bubble.py plugin/sudoku.py plugin/blocks.py
+python3 tools/check_names.py plugin/plugin.py plugin/pinball.py plugin/solitaire.py plugin/bubble.py plugin/sudoku.py plugin/blocks.py plugin/g2048.py
 python3 tools/msgfmt.py plugin/po/fi.po plugin/locale/fi/LC_MESSAGES/E2games.mo
 rm -rf build && mkdir -p build/data/$DEST build/control dist
 cp -r plugin/*.py plugin/plugin.png plugin/images plugin/locale build/data/$DEST/
@@ -17,7 +17,7 @@ Priority: optional
 Architecture: all
 Maintainer: E2games
 Depends: enigma2
-Description: E2games - games for Enigma2 receivers (pinball, solitaire, bubble shooter, sudoku, blocks)
+Description: E2games - games for Enigma2 receivers (pinball, solitaire, bubble shooter, sudoku, blocks, 2048)
 CTL
 printf '#!/bin/sh\nrm -rf /%s\nexit 0\n' "$DEST" > build/control/postrm
 chmod 755 build/control/postrm

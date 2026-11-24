@@ -11,7 +11,7 @@ from Screens.Screen import Screen
 
 from . import _
 
-VERSION = "0.3.003"
+VERSION = "0.3.004"
 
 
 def getScale():
@@ -33,6 +33,7 @@ def gameList():
 	# (title, function that opens the game) - add new games here
 	from .blocks import E2Blocks
 	from .bubble import E2Bubble
+	from .g2048 import E2Game2048
 	from .solitaire import E2Solitaire
 	from .sudoku import E2Sudoku
 	return [
@@ -41,6 +42,7 @@ def gameList():
 		(_("Bubble Shooter"), lambda session: session.open(E2Bubble)),
 		(_("Sudoku"), lambda session: session.open(E2Sudoku)),
 		(_("Blocks"), lambda session: session.open(E2Blocks)),
+		("2048", lambda session: session.open(E2Game2048)),
 	]
 
 
@@ -49,7 +51,7 @@ class E2gamesMenu(Screen, HelpableScreen):
 		s = getScale()
 		v = lambda x: int(round(x * s))
 		dw, dh = getDesktop(0).size().width(), getDesktop(0).size().height()
-		w, h = v(560), v(380)
+		w, h = v(560), v(420)
 		self.skin = """
 		<screen name="E2gamesMenu" position="%d,%d" size="%d,%d" title="E2games" flags="wfNoBorder" backgroundColor="#101430">
 			<widget name="title" position="%d,%d" size="%d,%d" font="Regular;%d" halign="center" valign="center" foregroundColor="#ffffff" backgroundColor="#101430" transparent="1" />
@@ -60,8 +62,8 @@ class E2gamesMenu(Screen, HelpableScreen):
 			(dw - w) // 2, (dh - h) // 2, w, h,
 			v(20), v(15), v(520), v(50), v(36),
 			v(20), v(68), v(520), v(32), v(22),
-			v(40), v(115), v(480), v(200), v(26), v(40),
-			v(20), v(330), v(520), v(34), v(19))
+			v(40), v(115), v(480), v(240), v(26), v(40),
+			v(20), v(370), v(520), v(34), v(19))
 		Screen.__init__(self, session)
 		HelpableScreen.__init__(self)
 		self.setTitle("E2games")

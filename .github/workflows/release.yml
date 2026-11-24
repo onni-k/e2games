@@ -22,6 +22,7 @@ jobs:
           python3 tools/test_bubble.py
           python3 tools/test_sudoku.py
           python3 tools/test_blocks.py
+          python3 tools/test_2048.py
           sh tools/build.sh
       - name: Publish release
         env:

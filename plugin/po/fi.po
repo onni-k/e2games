@@ -404,3 +404,42 @@ msgstr "Syötä numero"
 
 msgid "HELP: remote control help"
 msgstr "HELP: kaukosäätimen ohje"
+
+msgid "Best score"
+msgstr "Paras tulos"
+
+msgid "Arrows: slide the tiles"
+msgstr "Nuolet: liu'uta laattoja"
+
+msgid "RED: undo the last move"
+msgstr "PUNAINEN: peru viimeisin siirto"
+
+msgid "Tiles with the same number join into one when they touch. Make a tile with 2048!"
+msgstr "Samanarvoiset laatat yhdistyvät, kun ne osuvat toisiinsa. Tee laatta, jossa on 2048!"
+
+msgid "Continue / new game"
+msgstr "Jatka / uusi peli"
+
+msgid "Slide left"
+msgstr "Liu'uta vasemmalle"
+
+msgid "Slide right"
+msgstr "Liu'uta oikealle"
+
+msgid "Slide up"
+msgstr "Liu'uta ylös"
+
+msgid "Slide down"
+msgstr "Liu'uta alas"
+
+msgid "Undo the last move"
+msgstr "Peru viimeisin siirto"
+
+msgid "You made 2048!"
+msgstr "Teit 2048-laatan!"
+
+msgid "Press OK to keep playing"
+msgstr "Jatka pelaamista painamalla OK"
+
+msgid "No more moves"
+msgstr "Siirtoja ei ole enää"
